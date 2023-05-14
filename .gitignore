@@ -1,3 +1,4 @@
 node_modules
 packages/vue/dist
+packages/vue/test
 .vscode/

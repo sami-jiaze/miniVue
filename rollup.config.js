@@ -20,7 +20,7 @@ export default [
         // 生成的包格式：一个自动执行的功能，适合作为<script>标签
         format: 'iife',
         // 变量名
-        name: 'Vue',
+        name: 'myVue',
       },
     ],
     // 插件

@@ -35,7 +35,7 @@
     // 路径映射
     "baseUrl": ".",
     "paths": {
-      "@vue/*": [
+      "@myvue/*": [
         "packages/*/src"
       ]
     }
