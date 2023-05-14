@@ -1,7 +1,7 @@
 import { isArray } from "@myvue/shared"
 
 // 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
-type Dep = Set<ReactiveEffect>
+export type Dep = Set<ReactiveEffect>
 export const createDep = (effects?: ReactiveEffect[]) => {
   const dep = new Set<ReactiveEffect>(effects) as Dep
   return dep
