@@ -1,4 +1,4 @@
-import { isArray } from "@vue/shared";
-console.log('hello world');
-console.log(isArray([]));
+// 实现Vue的reactive功能
+export { myReactive } from '@myvue/reactivity'
+
 
