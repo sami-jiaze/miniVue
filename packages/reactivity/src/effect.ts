@@ -1,4 +1,13 @@
-type keytoDepMap = Map<any, ReactiveEffect>
+import { isArray } from "@myvue/shared"
+
+// 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
+type Dep = Set<ReactiveEffect>
+export const createDep = (effects?: ReactiveEffect[]) => {
+  const dep = new Set<ReactiveEffect>(effects) as Dep
+  return dep
+}
+
+type keytoDepMap = Map<any, Dep>
 const targetMap = new WeakMap<any, keytoDepMap>()
 
 // 标记当前被执行的effect
@@ -28,17 +37,47 @@ export function track(target: object, key: unknown) {
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()))
   }
-  depsMap?.set(key, activeEffect)
-  console.log("targetMap", targetMap);
+  // 会出现一个key只能绑定一个effect的bug
+  // depsMap?.set(key, activeEffect)
+
+  // 让一个key可以绑定多个effect 即传入一个effect数组
+  let dep = depsMap.get(key)
+  if (!dep) {
+    depsMap.set(key, (dep = createDep()))
+  }
+  trackEffects(dep)
+
+  console.log('targetMap', targetMap)
 }
 
 // 触发依赖
 export function trigger(target: object, key: unknown, newValue: unknown) {
   console.log('依赖触发', target, key, newValue)
-  const depsMap =  targetMap.get(target)
+  const depsMap = targetMap.get(target)
   if (!depsMap) return
-  const effect = depsMap.get(key) as ReactiveEffect
+
+  // 会出现一个key只能绑定一个effect的bug
+  // const effect = depsMap.get(key) as ReactiveEffect
+
+  // key已经绑定了多个effect 现在依次执行
+  const effect: Dep | undefined = depsMap.get(key)
+
   if (!effect) return
   // 若不为空则触发依赖函数
-  effect.fn();
+  // effect.fn()
+
+  triggerEffects(effect);
+}
+
+// 利用 dep 依次跟踪指定 key 的所有 effect
+export function trackEffects(dep: Dep) {
+  dep.add(activeEffect!)
+}
+
+// 触发指定 key 的所有 effect 依赖
+export function triggerEffects(dep: Dep) {
+  const effects =  isArray(dep) ? dep : [...dep]
+  for(const effect of effects){
+    effect.run();
+  }
 }
