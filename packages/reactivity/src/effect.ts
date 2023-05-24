@@ -83,8 +83,16 @@ export function trackEffects(dep: Dep) {
 // 触发指定 key 的所有 effect 依赖
 export function triggerEffects(dep: Dep) {
   const effects = isArray(dep) ? dep : [...dep]
+  // 两次for循环 让计算属性的effect先执行 避免重新刷新脏值带来的死循环
   for (const effect of effects) {
-    triggerEffect(effect)
+    if (effect.computed) {
+      triggerEffect(effect)
+    }
+  }
+  for (const effect of effects) {
+    if (!effect.computed) {
+      triggerEffect(effect)
+    }
   }
 }
 
