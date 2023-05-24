@@ -1,7 +1,9 @@
-import { isArray } from "@myvue/shared"
+import { isArray } from '@myvue/shared'
+import { ComputedRefImpl } from './computed'
 
 // 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
 export type Dep = Set<ReactiveEffect>
+export type EffectScheduler = (...args: any[]) => any
 export const createDep = (effects?: ReactiveEffect[]) => {
   const dep = new Set<ReactiveEffect>(effects) as Dep
   return dep
@@ -21,7 +23,11 @@ export function myEffect<T = any>(fn: () => T) {
 }
 
 export class ReactiveEffect<T = any> {
-  constructor(public fn: () => T) {}
+  computed?: ComputedRefImpl<T>
+  constructor(
+    public fn: () => T,
+    public scheduler: EffectScheduler | null = null,
+  ) {}
 
   run() {
     activeEffect = this
@@ -66,7 +72,7 @@ export function trigger(target: object, key: unknown, newValue: unknown) {
   // 若不为空则触发依赖函数
   // effect.fn()
 
-  triggerEffects(effect);
+  triggerEffects(effect)
 }
 
 // 利用 dep 依次跟踪指定 key 的所有 effect
@@ -76,8 +82,17 @@ export function trackEffects(dep: Dep) {
 
 // 触发指定 key 的所有 effect 依赖
 export function triggerEffects(dep: Dep) {
-  const effects =  isArray(dep) ? dep : [...dep]
-  for(const effect of effects){
-    effect.run();
+  const effects = isArray(dep) ? dep : [...dep]
+  for (const effect of effects) {
+    triggerEffect(effect)
+  }
+}
+
+// 触发指定依赖
+export function triggerEffect(effect: ReactiveEffect) {
+  if (effect.scheduler) {
+    effect.scheduler()
+  } else {
+    effect.run()
   }
 }
