@@ -1,9 +1,14 @@
-import { isArray } from '@myvue/shared'
+import { extend, isArray } from '@myvue/shared'
 import { ComputedRefImpl } from './computed'
 
 // 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
 export type Dep = Set<ReactiveEffect>
 export type EffectScheduler = (...args: any[]) => any
+export interface ReactiveEffectOptions {
+  lazy?: boolean
+  scheduler?: EffectScheduler
+}
+
 export const createDep = (effects?: ReactiveEffect[]) => {
   const dep = new Set<ReactiveEffect>(effects) as Dep
   return dep
@@ -16,12 +21,21 @@ const targetMap = new WeakMap<any, keytoDepMap>()
 export let activeEffect: ReactiveEffect | undefined
 
 // myEffect 主函数
-export function myEffect<T = any>(fn: () => T) {
+export function myEffect<T = any>(
+  fn: () => T,
+  options?: ReactiveEffectOptions,
+) {
   const _effect = new ReactiveEffect(fn)
-
-  _effect.run()
+  if (options) {
+    extend(_effect, options);
+  }
+  // 如果没有懒加载
+  if (!options || !options.lazy) {
+    _effect.run()
+  }
 }
 
+// 调度器scheduler 作用是控制执行顺序
 export class ReactiveEffect<T = any> {
   computed?: ComputedRefImpl<T>
   constructor(
