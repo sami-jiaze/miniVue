@@ -27,7 +27,7 @@ export function myEffect<T = any>(
 ) {
   const _effect = new ReactiveEffect(fn)
   if (options) {
-    extend(_effect, options);
+    extend(_effect, options)
   }
   // 如果没有懒加载
   if (!options || !options.lazy) {
@@ -47,6 +47,7 @@ export class ReactiveEffect<T = any> {
     activeEffect = this
     return this.fn()
   }
+  stop() {}
 }
 
 // 收集依赖
