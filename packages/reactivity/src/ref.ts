@@ -12,7 +12,7 @@ export interface Ref<T = any> {
   value: T
 }
 
-// 是否能使用ref 复杂数据类型/简单数据类型
+// 是否能使用ref 是否已拥有了响应性
 export function isRef(value: any): value is Ref {
   return !!(value && value.__v_isRef)
 }
