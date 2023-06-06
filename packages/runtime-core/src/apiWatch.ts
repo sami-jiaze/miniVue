@@ -1,4 +1,4 @@
-import { EMPTY_OBJ, hasChanged } from '@myvue/shared'
+import { EMPTY_OBJ, hasChanged, isObject } from '@myvue/shared'
 import { isReactive } from 'packages/reactivity/src/reactive'
 import { queuePreFlushCb } from './scheduler'
 import { ReactiveEffect } from 'packages/reactivity/src/effect'
@@ -29,7 +29,7 @@ function doWatch(
   if (cb && deep) {
     // TODO
     const baseGetter = getter
-    getter = () => baseGetter()
+    getter = () => traverse(baseGetter())
   }
 
   let oldValue = {}
@@ -59,4 +59,18 @@ function doWatch(
   return () => {
     effect.stop()
   }
+}
+
+export function traverse(value: unknown, seen?: Set<unknown>) {
+  if (!isObject(value)) {
+    return value
+  }
+  seen = seen || new Set()
+
+  seen.add(value)
+
+  for (const key in value as object) {
+    traverse((value as any)[key], seen)
+  }
+  return value
 }
