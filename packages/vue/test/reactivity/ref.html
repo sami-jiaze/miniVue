@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+
+</head>
+
+<body>
+  <div id="app">
+    <div id="p1"></div>
+    <div id="p2"></div>
+    <div id="p3"></div>
+  </div>
+  <script>
+    const { myRef, myEffect } = myVue;
+
+    const obj = myRef({
+      name: 'rio'
+    })
+    const name = myRef('ami');
+
+    myEffect(() => {
+      document.querySelector('#p1').innerText = obj.value.name + '1';
+    })
+    myEffect(() => {
+      document.querySelector('#p2').innerText = obj.value.name;
+    })
+    myEffect(() => {
+      document.querySelector('#p3').innerText = name.value;
+    })
+
+    setTimeout(() => {
+      obj.value.name = obj.value.name + '1'
+      name.value = 'Ami'
+      console.log(name);
+    }, 2000);
+
+    console.log("obj", obj);
+    console.log("name", name);
+  </script>
+</body>
+
+</html>

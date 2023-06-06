@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    const { myReactive, myEffect, myComputed, queuePreFlushCb } = myVue
+    const obj = myReactive({
+      num: 1
+    })
+
+    myEffect(() => {
+      console.log(obj.num);
+    }, {
+      scheduler() {
+        queuePreFlushCb(() => {
+          console.log(333);
+        })
+      }
+    })
+
+    obj.num = 10
+
+    console.log('end');
+  </script>
+</body>
+
+</html>

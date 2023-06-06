@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div id="p1"></div>
+    <div id="p2"></div>
+  </div>
+  <script>
+    const { myReactive, myEffect } = myVue;
+
+    const obj = myReactive({
+      name: 'rio',
+      res: true
+    })
+
+    myEffect(() => {
+      document.querySelector('#p1').innerText = obj.res ? obj.name : 'not';
+    })
+    myEffect(() => {
+      document.querySelector('#p2').innerText = obj.name;
+    })
+
+    setTimeout(() => {
+      obj.res = false;
+      obj.name = 'Rio'
+    }, 2000);
+
+  </script>
+</body>
+
+</html>
