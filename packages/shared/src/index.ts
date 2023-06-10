@@ -27,7 +27,7 @@ export const extend = Object.assign
 // 空对象
 export const EMPTY_OBJ: { readonly [key: string]: any } = {}
 
-const onRE = /^on[^Aa-Zz]/
+const onRE = /^on[^a-zA-Z]/
 // 是否是事件绑定
 export const isOn = (key: string) => {
   return onRE.test(key)
