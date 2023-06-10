@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    const { h, Fragment, Text, Comment } = myVue
+    const component1 = {
+      render() {
+        const vnode1 = h('div', 'this is a component')
+        return vnode1
+      }
+    }
+
+    const vnode1 = h('div', {
+      class: 'test1'
+    }, 'htllo render')
+    
+    const vnode2 = h('div', {
+      class: 'test2'
+    }, [
+      h('p', 'p1'),
+      h('p', 'p2'),
+      h('p', 'p3')
+    ])
+
+
+    const vnode3 = h(component1)
+    const vnode4 = h(Text, 'this is a text')
+    const vnode5 = h(Comment, 'this is a Comment')
+    const vnode6 = h(Fragment, 'this is a Fragment')
+
+
+    const vnode7 = h('div', {
+      class: {
+        'red': true
+      }
+    }, 'class red')
+
+    const vnode8 = h('div', {
+      class: [
+        { 'red': true },
+        { 'blue': true },
+        { 'green': false },
+        { 'black': true },
+      ]
+    }, 'class red')
+
+
+    console.log(vnode1);
+    console.log(vnode2);
+
+    console.log(vnode3);
+    console.log(vnode4);
+    console.log(vnode5);
+    console.log(vnode6);
+
+    console.log(vnode7);
+    console.log(vnode8);
+
+  </script>
+</body>
+
+</html>
