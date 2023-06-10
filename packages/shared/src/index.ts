@@ -11,6 +11,11 @@ export const isFunction = (val: unknown) => {
   return typeof val === 'function'
 }
 
+// 是否为string
+export const isString = (val: unknown) => {
+  return typeof val === 'string'
+}
+
 // 值是否发送改变
 export const hasChanged = (newVal: any, oldVal: any): boolean => {
   return !Object.is(newVal, oldVal)
