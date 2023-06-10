@@ -8,3 +8,5 @@ export {
   Fragment,
   Comment,
 } from '@myvue/runtime-core'
+
+export { render } from '@myvue/runtime-dom'

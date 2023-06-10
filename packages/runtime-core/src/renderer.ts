@@ -16,7 +16,7 @@ export interface RendererOptions {
   createText(text: string)
   // 设置 text
   setText(node, text): void
-  // 设置 text
+  // 设置 注释
   createComment(text: string)
 }
 
@@ -25,18 +25,43 @@ export function createRenderer(options: RendererOptions) {
 }
 
 function baseCreateRenderer(options: RendererOptions) {
+  const {
+    insert: hostInsert,
+    patchProp: hostPatchProp,
+    createElement: hostCreateElement,
+    setElementText: hostSetElementText,
+    remove: hostRemove,
+    createText: hostCreateText,
+    setText: hostSetText,
+    createComment: hostCreateComment,
+  } = options
+
   const processElement = (oldVNode, newVNode, container, anchor) => {
     if (oldVNode === null) {
-      mountElement(oldVNode, newVNode, container, anchor)
+      mountElement(newVNode, container, anchor)
     } else {
     }
   }
 
-  const mountElement = (oldVNode, newVNode, container, anchor) => {
+  // 挂载element
+  const mountElement = (vnode, container, anchor) => {
+    const { type, props, shapeFlag } = vnode
     // 创建element
-    // 设置文本
+    const el = (vnode.el = hostCreateElement(type))
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // 设置文本
+      hostSetElementText(el, vnode.child)
+    } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    }
+
     // 设置props
+    if (props) {
+      for (const key in props) {
+        hostPatchProp(el, key, null, props[key])
+      }
+    }
     // 插入节点
+    hostInsert(el, container, anchor)
   }
 
   const unmount = (vnode) => {}
@@ -54,7 +79,7 @@ function baseCreateRenderer(options: RendererOptions) {
       case Fragment:
         break
       default:
-        if (ShapeFlags.ELEMENT & shapeFlag) {
+        if (shapeFlag & ShapeFlags.ELEMENT) {
           processElement(oldVNode, newVNode, container, anchor)
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
         }
@@ -76,5 +101,5 @@ function baseCreateRenderer(options: RendererOptions) {
     container._vnode = vnode
   }
 
-  return render
+  return { render }
 }
