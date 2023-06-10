@@ -7,6 +7,7 @@ import { VNode, createVNode, isVNode } from './vnode'
 // 第三个参数是子节点。
 // 除了 type 外，其他参数都是可选的
 
+// h主函数 本质是返回一个vnode对象
 export function h(type: any, propsOrChildren?: any, children?: any): VNode {
 	const l = arguments.length
 
