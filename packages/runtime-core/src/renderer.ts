@@ -50,7 +50,7 @@ function baseCreateRenderer(options: RendererOptions) {
     const el = (vnode.el = hostCreateElement(type))
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
       // 设置文本
-      hostSetElementText(el, vnode.child)
+      hostSetElementText(el, vnode.children)
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     }
 
