@@ -2,12 +2,14 @@ import { isOn } from '@myvue/shared'
 import { patchClass } from './modules/class'
 import { patchDOMProp } from './modules/props'
 import { patchAttr } from './modules/attrs'
+import { patchStyle } from './modules/style'
 
 export const patchProp = (el: Element, key, prevValue, nextValue) => {
   if (key === 'class') {
     // console.log(el);
     patchClass(el, nextValue)
   } else if (key === 'style') {
+    patchStyle(el, prevValue, nextValue)
   } else if (isOn(key)) {
   } else if (shouldSetAsProp(el, key)) {
     patchDOMProp(el, key, nextValue)
