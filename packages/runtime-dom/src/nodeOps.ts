@@ -4,12 +4,18 @@ export const nodeOps = {
   },
   createElement: (tag): Element => {
     const el = document.createElement(tag)
+    // console.log('el',el);
     return el
   },
   setElementText: (el: Element, text) => {
     el.textContent = text
   },
-  remove(el) {},
+  remove(child: Element) {
+    const parent = child.parentNode
+    if(parent) {
+      parent.removeChild(child)
+    }
+  },
   createText(text: string) {},
   setText(node, text) {},
   createComment(text: string) {},

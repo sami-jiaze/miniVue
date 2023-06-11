@@ -1,5 +1,6 @@
 import { ShapeFlags } from 'packages/shared/src/shapeFlags'
-import { Fragment, Text, Comment } from './vnode'
+import { Fragment, Text, Comment, isSameVNodeType } from './vnode'
+import { EMPTY_OBJ } from '@myvue/shared'
 
 export interface RendererOptions {
   // 为指定 element 的 prop 打补丁
@@ -36,10 +37,12 @@ function baseCreateRenderer(options: RendererOptions) {
     createComment: hostCreateComment,
   } = options
 
+  // patch 函数中对 ShapeFlags 为ELEMENT的处理
   const processElement = (oldVNode, newVNode, container, anchor) => {
     if (oldVNode === null) {
       mountElement(newVNode, container, anchor)
     } else {
+      patchElement(oldVNode, newVNode)
     }
   }
 
@@ -53,7 +56,6 @@ function baseCreateRenderer(options: RendererOptions) {
       hostSetElementText(el, vnode.children)
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     }
-
     // 设置props
     if (props) {
       for (const key in props) {
@@ -64,13 +66,96 @@ function baseCreateRenderer(options: RendererOptions) {
     hostInsert(el, container, anchor)
   }
 
-  const unmount = (vnode) => {}
+  // 更新element
+  const patchElement = (oldVNode, newVNode) => {
+    const el = (newVNode.el = oldVNode.el)
+    const oldProps = oldVNode.props
+    const newProps = newVNode.props
+    // 更新子节点
+    patchChildren(oldVNode, newVNode, el, null)
+    // 更新 props
+    patchProps(el, newVNode, oldProps, newProps)
+  }
 
+  // 卸载element
+  const unmount = (vnode) => {
+    // console.log("will remove", vnode);
+    hostRemove(vnode.el)
+  }
+
+  const patchChildren = (oldVnode, newVnode, container, anchor) => {
+    const c1 = oldVnode && oldVnode.children
+    const prevShapeFlag = oldVnode ? oldVnode.shapeFlags : 0
+    const c2 = newVnode && newVnode.children
+    const { shapeFlag } = newVnode
+
+    // 新子节点为 TEXT_CHILDREN
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // 旧子节点为 ARRAY_CHILDREN
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // TODO: 卸载旧子节点
+      }
+      // 新旧子节点不同
+      if (c2 !== c1) {
+        // 挂载新子节点的文本
+        hostSetElementText(container, c2 as string)
+      }
+    } else {
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          // 要进行 diff 运算
+          // patchKeyedChildren(c1, c2, container, anchor)
+        }
+        // 新子节点不为 ARRAY_CHILDREN，则直接卸载旧子节点
+        else {
+          // TODO: 卸载
+        }
+      } else {
+        if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+          // 删除旧的文本
+          hostSetElementText(container, '')
+        }
+        // 新子节点为 ARRAY_CHILDREN
+        if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          // TODO: 单独挂载新子节点操作
+        }
+      }
+    }
+  }
+
+  const patchProps = (el: Element, vnode, oldProps, newProps) => {
+    // 新旧 props 不相同时才进行处理
+    if (oldProps !== newProps) {
+      // 遍历新的 props，触发 hostPatchProp ，赋值新属性
+      for (const key in newProps) {
+        const next = newProps[key]
+        const prev = oldProps[key]
+        if (next !== prev) {
+          hostPatchProp(el, key, prev, next)
+        }
+      }
+      // 存在旧的 props 时
+      if (oldProps !== EMPTY_OBJ) {
+        // 遍历旧的 props，依次触发 hostPatchProp ，删除不存在于新props 中的旧属性
+        for (const key in oldProps) {
+          if (!(key in newProps)) {
+            hostPatchProp(el, key, oldProps[key], null)
+          }
+        }
+      }
+    }
+  }
+
+  // render函数挂载或者更新操作
   const patch = (oldVNode, newVNode, container, anchor = null) => {
     if (oldVNode === newVNode) {
       return
     }
     const { type, shapeFlag } = newVNode
+    if (oldVNode && !isSameVNodeType(oldVNode, newVNode)) {
+      unmount(oldVNode)
+      oldVNode = null
+    }
     switch (type) {
       case Text:
         break
@@ -88,6 +173,9 @@ function baseCreateRenderer(options: RendererOptions) {
   }
 
   const render = (vnode, container) => {
+    // console.log("render vnode: ", vnode);
+    // console.log("render container: ", container);
+
     if (vnode === null) {
       // 卸载
       if (container._vnode) {
