@@ -6,20 +6,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <script src="../../dist/vue.js"></script>
-
+  <style>
+    .red {
+      color: red;
+    }
+  </style>
 </head>
 
 <body>
   <div id="app"></div>
+  <div id="root"></div>
   <script>
     const { h, render } = myVue
-    console.log(render);
-    const vnode = h('div',{
-      class: 'color'
+
+    const vnode = h('div', {
+      class: 'red'
     }, 'hello render')
-    console.log(vnode);
 
     render(vnode, document.querySelector('#app'));
+
+    setTimeout(() => {
+      const vnode = h('div', {
+        class: 'red1',
+        style: {
+          fontSize: '32px'
+        }
+      }, 'update')
+      render(vnode, document.querySelector('#app'));
+
+    }, 2000);
+
+    // 事件
+    const cnode = h('button', {
+      onClick() {
+        console.log("click");
+      }
+    }, 'click')
+    render(cnode, document.querySelector('#root'));
+
+    setTimeout(() => {
+      const cnode = h('button', {
+        onDblclick() {
+          console.log("click two");
+        }
+      }, 'click')
+      render(cnode, document.querySelector('#root'));
+    }, 2000);
   </script>
 </body>
 
