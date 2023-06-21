@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <div id="root"></div>
+  <div id="set"></div>
+  <script>
+    const { h, render, myReactive } = myVue
+
+    //1
+    const component = {
+      render() {
+        return h('div', 'hello component')
+      }
+    }
+    const vnode = h(component)
+    render(vnode, document.querySelector('#app'))
+    //2
+    setTimeout(() => {
+      const component2 = {
+        render() {
+          return h('h2', 'update component2')
+        }
+      }
+      const vnode2 = h(component2)
+      render(vnode2, document.querySelector('#app'))
+    }, 2000);
+    //3
+    const component3 = {
+      data() {
+        return {
+          msg: 'hello msg in component3'
+        }
+      },
+      render() {
+        return h('div', this.msg);
+      },
+      mounted() {
+        console.log('mounted', this.msg);
+      },
+      beforeCreate() {
+        console.log('beforeCreate');
+      },
+      created() {
+        console.log('created');
+      },
+      beforeMount() {
+        console.log('beforeMount', this.msg);
+        setTimeout(() => {
+          this.msg = 'hello world'
+        }, 2000);
+      },
+    }
+    const vnode3 = h(component3)
+    render(vnode3, document.querySelector('#root'))
+    //4
+    const component4 = {
+      setup() {
+        const obj = myReactive({
+          name: 'rio'
+        })
+
+        setTimeout(() => {
+          obj.name = 'RIO'
+        }, 2000);
+
+        return ()=>h('div', obj.name)
+      }
+    }
+    const vnode4 = h(component4)
+    render(vnode4, document.querySelector('#set'))
+  </script>
+</body>
+
+</html>
