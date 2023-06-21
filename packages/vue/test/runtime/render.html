@@ -16,13 +16,15 @@
 <body>
   <div id="app"></div>
   <div id="root"></div>
+  <div id="text1"></div>
+  <div id="comment1"></div>
+  <div id="fragment1"></div>
   <script>
-    const { h, render } = myVue
+    const { h, render, Text, Comment, Fragment } = myVue
 
     const vnode = h('div', {
       class: 'red'
     }, 'hello render')
-
     render(vnode, document.querySelector('#app'));
 
     setTimeout(() => {
@@ -33,7 +35,6 @@
         }
       }, 'update')
       render(vnode, document.querySelector('#app'));
-
     }, 2000);
 
     // 事件
@@ -51,6 +52,26 @@
         }
       }, 'click')
       render(cnode, document.querySelector('#root'));
+    }, 2000);
+
+    // text
+    const tnode = h(Text, 'hello text')
+    render(tnode, document.querySelector('#text1'));
+    setTimeout(() => {
+      const tnode = h(Text, 'HELLO')
+      render(tnode, document.querySelector('#text1'));
+    }, 2000);
+
+    // comment
+    const mnode = h(Comment, 'hello comment1')
+    render(mnode, document.querySelector('#comment1'));
+
+    // Fragment
+    const fnode = h(Fragment, 'hello fragment1')
+    render(fnode, document.querySelector('#fragment1'));
+    setTimeout(() => {
+      const fnode = h(Fragment, 'Fragment1')
+      render(fnode, document.querySelector('#fragment1'));
     }, 2000);
   </script>
 </body>
