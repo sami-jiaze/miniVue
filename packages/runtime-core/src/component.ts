@@ -69,6 +69,7 @@ function applyOptions(instance) {
   if (created) {
     callHook(created, instance.data)
   }
+  
   registerLifecycleHooks(onBeforeMount, beforeMount)
   registerLifecycleHooks(onMounted, mounted)
 
@@ -78,5 +79,5 @@ function applyOptions(instance) {
 }
 
 function callHook(hook: Function, proxy) {
-  hook.bind(proxy)
+  hook.bind(proxy)()
 }
