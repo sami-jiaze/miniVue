@@ -1,6 +1,7 @@
 import { ShapeFlags } from 'packages/shared/src/shapeFlags'
 import { Fragment, Text, Comment, isSameVNodeType } from './vnode'
-import { EMPTY_OBJ } from '@myvue/shared'
+import { EMPTY_OBJ, isString } from '@myvue/shared'
+import { normalizeVNode } from './componentRenderUtils'
 
 export interface RendererOptions {
   // 为指定 element 的 prop 打补丁
@@ -45,6 +46,34 @@ function baseCreateRenderer(options: RendererOptions) {
       patchElement(oldVNode, newVNode)
     }
   }
+  const processText = (oldVNode, newVNode, container, anchor) => {
+    if (oldVNode === null) {
+      newVNode.el = hostCreateText(newVNode.children)
+      hostInsert(newVNode.el, container, anchor)
+    } else {
+      const el = (newVNode.el = oldVNode.el!)
+      if (newVNode.children !== oldVNode.children) {
+        {
+          hostSetText(el, newVNode.children)
+        }
+      }
+    }
+  }
+  const processComment = (oldVNode, newVNode, container, anchor) => {
+    if (oldVNode === null) {
+      newVNode.el = hostCreateComment(newVNode.children)
+      hostInsert(newVNode.el, container, anchor)
+    } else {
+      newVNode.el = oldVNode.el
+    }
+  }
+  const processFragment = (oldVNode, newVNode, container, anchor) => {
+    if (oldVNode === null) {
+      mountChildren(newVNode.children, container, anchor)
+    } else {
+      patchChildren(oldVNode, newVNode, container, anchor)
+    }
+  }
 
   // 挂载element
   const mountElement = (vnode, container, anchor) => {
@@ -64,6 +93,16 @@ function baseCreateRenderer(options: RendererOptions) {
     }
     // 插入节点
     hostInsert(el, container, anchor)
+  }
+  // 针对Fragment情况
+  const mountChildren =(children, container, anchor)=>{
+    if(isString(children)){
+      children = children.split('')
+    }
+    for(let i=0; i<children.length; i++) {
+      const child = (children[i] = normalizeVNode(children[i]))
+      patch(null, child, container, anchor)
+    }
   }
 
   // 更新element
@@ -158,10 +197,13 @@ function baseCreateRenderer(options: RendererOptions) {
     }
     switch (type) {
       case Text:
+        processText(oldVNode, newVNode, container, anchor)
         break
       case Comment:
+        processComment(oldVNode, newVNode, container, anchor)
         break
       case Fragment:
+        processFragment(oldVNode, newVNode, container, anchor)
         break
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
