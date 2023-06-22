@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    const { h, render } = myVue
+    const vnode = h('ul', [
+      h('li', {
+        key: 1
+      }, 'a'),
+      h('li', {
+        key: 2
+      }, 'b'),
+      h('li', {
+        key: 3
+      }, 'c'),
+    ])
+    render(vnode, document.querySelector('#app'))
+
+    // 自前向后
+    // setTimeout(() => {
+    //   const vnode2 = h('ul', [
+    //     h('li', {
+    //       key: 1
+    //     }, 'a'),
+    //     h('li', {
+    //       key: 2
+    //     }, 'b'),
+    //     h('li', {
+    //       key: 3
+    //     }, 'd')
+    //   ])
+    //   render(vnode2, document.querySelector('#app'))
+    // }, 1000);
+
+    // 自后向前
+    // setTimeout(() => {
+    //   const vnode2 = h('ul', [
+    //     h('li', {
+    //       key: 4
+    //     }, 'a5'),
+    //     h('li', {
+    //       key: 2
+    //     }, 'b'),
+    //     h('li', {
+    //       key: 3
+    //     }, 'd')
+    //   ])
+    //   render(vnode2, document.querySelector('#app'))
+    // }, 2000);
+
+    // 新比旧多
+    // setTimeout(() => {
+    //   const vnode2 = h('ul', [
+    //     h('li', {
+    //       key: 1
+    //     }, 'a'),
+    //     h('li', {
+    //       key: 2
+    //     }, 'b'),
+    //     h('li', {
+    //       key: 3
+    //     }, 'c'), 
+    //     h('li', {
+    //       key: 4
+    //     }, 'd')
+    //   ])
+    //   render(vnode2, document.querySelector('#app'))
+    // }, 2000);
+
+    // 旧比新多
+    // setTimeout(() => {
+    //   const vnode2 = h('ul', [
+    //     h('li', {
+    //       key: 1
+    //     }, 'a'),
+    //     h('li', {
+    //       key: 2
+    //     }, 'b')
+    //   ])
+    //   render(vnode2, document.querySelector('#app'))
+    // }, 2000);
+  </script>
+</body>
+
+</html>
