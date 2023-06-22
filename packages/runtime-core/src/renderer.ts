@@ -159,8 +159,8 @@ function baseCreateRenderer(options: RendererOptions) {
   // 更新element
   const patchElement = (oldVNode, newVNode) => {
     const el = (newVNode.el = oldVNode.el)
-    const oldProps = oldVNode.props
-    const newProps = newVNode.props
+    const oldProps = oldVNode.props || EMPTY_OBJ
+    const newProps = newVNode.props || EMPTY_OBJ
     // 更新子节点
     patchChildren(oldVNode, newVNode, el, null)
     // 更新 props
@@ -175,7 +175,7 @@ function baseCreateRenderer(options: RendererOptions) {
 
   const patchChildren = (oldVnode, newVnode, container, anchor) => {
     const c1 = oldVnode && oldVnode.children
-    const prevShapeFlag = oldVnode ? oldVnode.shapeFlags : 0
+    const prevShapeFlag = oldVnode ? oldVnode.shapeFlag : 0
     const c2 = newVnode && newVnode.children
     const { shapeFlag } = newVnode
 
@@ -194,7 +194,7 @@ function baseCreateRenderer(options: RendererOptions) {
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
           // 要进行 diff 运算
-          // patchKeyedChildren(c1, c2, container, anchor)
+          patchKeyedChildren(c1, c2, container, anchor)
         }
         // 新子节点不为 ARRAY_CHILDREN，则直接卸载旧子节点
         else {
@@ -210,6 +210,32 @@ function baseCreateRenderer(options: RendererOptions) {
           // TODO: 单独挂载新子节点操作
         }
       }
+    }
+  }
+
+  // diff
+  const patchKeyedChildren = (
+    oldChildren,
+    newChildren,
+    container,
+    parentAnchor,
+  ) => {
+    let i = 0
+    const newChildrenLength = newChildren.length
+    // 旧的子节点最后一个下标
+    let oldChildrenEnd = oldChildren.length - 1
+    let newChildrenEnd = newChildren.length - 1
+    // 自前向后
+    while (i <= oldChildrenEnd && i <= newChildrenEnd) {
+      const oldVNode = oldChildren[i]
+      const newVNode = normalizeVNode(newChildren[i])
+      if (isSameVNodeType(oldVNode, newVNode)) {
+        // 是同一个vnode 未发生变化
+        patch(oldVNode, newVNode, container, null)
+      } else {
+        break
+      }
+      i++
     }
   }
 
