@@ -41,6 +41,7 @@ function createBaseVNode(type: any, props: any, children: any, shapeFlag) {
     __v_isVNode: true,
     type,
     props,
+    key: props?.key || null,
     shapeFlag,
   } as VNode
 
