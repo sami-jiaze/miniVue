@@ -225,7 +225,7 @@ function baseCreateRenderer(options: RendererOptions) {
     // 旧的子节点最后一个下标
     let oldChildrenEnd = oldChildren.length - 1
     let newChildrenEnd = newChildren.length - 1
-    // 自前向后
+    // 自前向后 从前开始的相同 vnode 将被处理
     while (i <= oldChildrenEnd && i <= newChildrenEnd) {
       const oldVNode = oldChildren[i]
       const newVNode = normalizeVNode(newChildren[i])
@@ -236,6 +236,37 @@ function baseCreateRenderer(options: RendererOptions) {
         break
       }
       i++
+    }
+    // 自后向前 从后开始的相同 vnode 将被处理
+    while (i <= oldChildrenEnd && i <= newChildrenEnd) {
+      const oldVNode = oldChildren[oldChildrenEnd]
+      const newVNode = newChildren[newChildrenEnd]
+      if (isSameVNodeType(oldVNode, newVNode)) {
+        patch(oldVNode, newVNode, container, null)
+      } else {
+        break
+      }
+      oldChildrenEnd--
+      newChildrenEnd--
+    }
+    // 新节点比旧节点多的情况
+    if (i > oldChildrenEnd) {
+      if (i <= newChildrenEnd) {
+        const nextPos = newChildren + 1
+        const anchor =
+          nextPos < newChildrenLength ? newChildren[nextPos].el : parentAnchor
+        while (i <= newChildrenEnd) {
+          patch(null, normalizeVNode(newChildren[i]), container, anchor)
+          i++
+        }
+      }
+    }
+    // 旧节点多于新节点
+    else if (i > newChildrenEnd) {
+      while (i <= oldChildrenEnd) {
+        unmount(oldChildren[i])
+        i++
+      }
     }
   }
 
