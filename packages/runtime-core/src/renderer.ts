@@ -92,6 +92,7 @@ function baseCreateRenderer(options: RendererOptions) {
       // 设置文本
       hostSetElementText(el, vnode.children)
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      mountChildren(vnode.children, el, anchor)
     }
     // 设置props
     if (props) {
