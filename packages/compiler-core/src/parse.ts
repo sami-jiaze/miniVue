@@ -109,7 +109,10 @@ function parseText(context: ParseContext) {
   }
   // 截取文本
   const content = parseTextData(context, endIndex)
-  return content
+  return {
+    type: NodeTypes.TEXT,
+    content
+  }
 }
 function parseTextData(context: ParseContext, length: number) {
   const rawText = context.source.slice(0, length)
