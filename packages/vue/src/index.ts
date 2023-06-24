@@ -10,3 +10,5 @@ export {
 } from '@myvue/runtime-core'
 
 export { render } from '@myvue/runtime-dom'
+
+export { compile } from '@myvue/compiler-dom'
