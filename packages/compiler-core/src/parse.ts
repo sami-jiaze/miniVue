@@ -11,8 +11,9 @@ const enum TagType {
 
 export function baseParse(content: string) {
   const context = createParserContent(content)
-  // console.log(context);
-  parseChildren(context, [])
+  console.log(context);
+  const children = parseChildren(context, [])
+  console.log(children);
 }
 
 function createParserContent(content: string): ParseContext {
@@ -30,7 +31,7 @@ function parseChildren(context: ParseContext, ancestors) {
     if (s.startsWith('{{')) {
     } else if (s[0] === '<') {
       // 标签开始
-      if (/[a-z]i/.test(s[1])) {
+      if (/[a-z]/i.test(s[1])) {
         noder = parseElement(context, ancestors)
       }
     }
