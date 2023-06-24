@@ -2,16 +2,21 @@ export interface ParseContext {
   source: string
 }
 
-function createParserContent(content: string): ParseContext {
-  return {
-    source: content,
-  }
+const enum TagType {
+  Start,
+  End,
 }
 
 export function baseParse(content: string) {
   const context = createParserContent(content)
   // console.log(context);
   parseChildren(context, [])
+}
+
+function createParserContent(content: string): ParseContext {
+  return {
+    source: content,
+  }
 }
 
 function parseChildren(context: ParseContext, ancestors) {
@@ -54,4 +59,25 @@ function pushNode(nodes, noder) {
 }
 
 function parseElement(context: ParseContext, ancestors) {}
+function parseTag(context: ParseContext, type: TagType) {
+  // 获取标签名
+  const match: any = /^<\/?([a-z][^\r\n\t\f />]*)/i.exec(context.source)
+  const tag = match[1]
+
+  advanceBy(context, match[0].length)
+  // 自闭合与非自闭合标签判断
+  let isSelfClosing = context.source.startsWith('/>')
+  advanceBy(context, isSelfClosing ? 2 : 1)
+
+  return {
+    tag,
+  }
+}
+
 function parseText(context: ParseContext) {}
+
+function advanceBy(context: ParseContext, numberOfCharacters: number) {
+  const { source } = context
+  // 去除部分无效数据
+  context.source = source.slice(numberOfCharacters)
+}
