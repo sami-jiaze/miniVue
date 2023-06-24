@@ -1,4 +1,4 @@
-import { ElementTypes, NodeTypes } from "./ast"
+import { ElementTypes, NodeTypes } from './ast'
 
 export interface ParseContext {
   source: string
@@ -64,13 +64,13 @@ function pushNode(nodes, noder) {
 function parseElement(context: ParseContext, ancestors) {
   // 开始标签
   const element = parseTag(context, TagType.Start)
-  ancestors.push(element) 
+  ancestors.push(element)
   const children = parseChildren(context, ancestors)
   ancestors.pop()
 
   element.children = children
   // 结束标签
-  if(startsWithEndTagOpen(context.source, element.tag)){
+  if (startsWithEndTagOpen(context.source, element.tag)) {
     parseTag(context, TagType.End)
   }
   return element
@@ -90,11 +90,31 @@ function parseTag(context: ParseContext, type: TagType) {
     tag,
     TagType: ElementTypes.ELEMENT,
     props: [],
-    children: []
+    children: [],
   }
 }
 
-function parseText(context: ParseContext) {}
+function parseText(context: ParseContext) {
+  // 定义普通文本结束的标记 hello world </div> 那么文本结束的标记就为 <
+  const endTokens = ['<', '{{']
+  let endIndex = context.source.length
+
+  // 计算精准的 endIndex
+  for (let i = 0; i < endTokens.length; i++) {
+    const index = context.source.indexOf(endTokens[i], 1)
+    if (index !== -1 && endIndex > index) {
+      endIndex = index
+    }
+  }
+  // 截取文本
+  const content = parseTextData(context, endIndex)
+  return content
+}
+function parseTextData(context: ParseContext, length: number) {
+  const rawText = context.source.slice(0, length)
+  advanceBy(context, length)
+  return rawText
+}
 
 function advanceBy(context: ParseContext, numberOfCharacters: number) {
   const { source } = context
@@ -104,9 +124,9 @@ function advanceBy(context: ParseContext, numberOfCharacters: number) {
 
 // 是否为标签结束的开始。 </div> 就是 div 标签结束的开始
 function startsWithEndTagOpen(source: string, tag: string): boolean {
-	return (
+  return (
     source.startsWith('</') &&
-		source.slice(2, 2 + tag.length).toLowerCase() === tag.toLowerCase() &&
-		/[\t\r\n\f />]/.test(source[2 + tag.length] || '>')
-	)
+    source.slice(2, 2 + tag.length).toLowerCase() === tag.toLowerCase() &&
+    /[\t\r\n\f />]/.test(source[2 + tag.length] || '>')
+  )
 }
