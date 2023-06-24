@@ -1,3 +1,5 @@
+import { ElementTypes, NodeTypes } from "./ast"
+
 export interface ParseContext {
   source: string
 }
@@ -58,19 +60,37 @@ function pushNode(nodes, noder) {
   nodes.push(noder)
 }
 
-function parseElement(context: ParseContext, ancestors) {}
+// 解析 Element 元素。如：<div>
+function parseElement(context: ParseContext, ancestors) {
+  // 开始标签
+  const element = parseTag(context, TagType.Start)
+  ancestors.push(element) 
+  const children = parseChildren(context, ancestors)
+  ancestors.pop()
+
+  element.children = children
+  // 结束标签
+  if(startsWithEndTagOpen(context.source, element.tag)){
+    parseTag(context, TagType.End)
+  }
+  return element
+}
+
+// 解析标签
 function parseTag(context: ParseContext, type: TagType) {
   // 获取标签名
   const match: any = /^<\/?([a-z][^\r\n\t\f />]*)/i.exec(context.source)
   const tag = match[1]
-
   advanceBy(context, match[0].length)
   // 自闭合与非自闭合标签判断
   let isSelfClosing = context.source.startsWith('/>')
   advanceBy(context, isSelfClosing ? 2 : 1)
-
   return {
+    type: NodeTypes.ELEMENT,
     tag,
+    TagType: ElementTypes.ELEMENT,
+    props: [],
+    children: []
   }
 }
 
@@ -80,4 +100,13 @@ function advanceBy(context: ParseContext, numberOfCharacters: number) {
   const { source } = context
   // 去除部分无效数据
   context.source = source.slice(numberOfCharacters)
+}
+
+// 是否为标签结束的开始。 </div> 就是 div 标签结束的开始
+function startsWithEndTagOpen(source: string, tag: string): boolean {
+	return (
+    source.startsWith('</') &&
+		source.slice(2, 2 + tag.length).toLowerCase() === tag.toLowerCase() &&
+		/[\t\r\n\f />]/.test(source[2 + tag.length] || '>')
+	)
 }
