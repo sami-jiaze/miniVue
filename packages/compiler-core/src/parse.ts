@@ -11,9 +11,18 @@ const enum TagType {
 
 export function baseParse(content: string) {
   const context = createParserContent(content)
-  console.log(context);
+  // console.log(context)
   const children = parseChildren(context, [])
-  console.log(children);
+  // console.log(children)
+  return createRoot(children)
+}
+
+export function createRoot(children) {
+  return {
+    type: NodeTypes.ROOT,
+    children,
+    loc: {},
+  }
 }
 
 function createParserContent(content: string): ParseContext {
@@ -49,7 +58,7 @@ function isEnd(context: ParseContext, ancestors) {
   const s = context.source
   if (s.startsWith('</')) {
     for (let i = ancestors.length - 1; i >= 0; i--) {
-      if (s.startsWith(ancestors[i].tag)) {
+      if (startsWithEndTagOpen(s, ancestors[i].tag)) {
         return true
       }
     }
@@ -89,7 +98,7 @@ function parseTag(context: ParseContext, type: TagType) {
   return {
     type: NodeTypes.ELEMENT,
     tag,
-    TagType: ElementTypes.ELEMENT,
+    tagType: ElementTypes.ELEMENT,
     props: [],
     children: [],
   }
@@ -111,7 +120,7 @@ function parseText(context: ParseContext) {
   const content = parseTextData(context, endIndex)
   return {
     type: NodeTypes.TEXT,
-    content
+    content,
   }
 }
 function parseTextData(context: ParseContext, length: number) {
