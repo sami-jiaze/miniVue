@@ -1,3 +1,5 @@
+import { NodeTypes } from './ast'
+
 export interface TransformConText {
   root
   parent: ParentNode | null
@@ -6,6 +8,12 @@ export interface TransformConText {
   helpers: Map<symbol, number>
   helper<T extends symbol>(name: T): T
   nodeTransforms: any[]
+}
+
+export function transform(root, options) {
+  // 生成上下文对象
+  const context = createTransformContext(root, options)
+  traverseNode(root, context)
 }
 
 // 创建 transform 上下文
@@ -26,12 +34,42 @@ export function createTransformContext(root, { nodeTransforms = [] }) {
   return context
 }
 
-export function transform(root, options) {
-  // 生成上下文对象
-  const context = createTransformContext(root, options)
+// 遍历转化节点 深度优先 子->父
+export function traverseNode(node, context: TransformConText) {
+  context.currentNode = node
+  const { nodeTransforms } = context
+  // 构建保存函数数组
+  const exitFns: any = []
+  // 转化函数的保存 存储所有节点的转化函数到exitFns中
+  for (let i = 0; i < nodeTransforms.length; i++) {
+    const onExit = nodeTransforms[i](node, context)
+    if (onExit) {
+      exitFns.push(onExit)
+    }
+  }
+
+  switch (node.type) {
+    case NodeTypes.ELEMENT:
+      break
+    case NodeTypes.ROOT:
+      break
+
+    default:
+      break
+  }
+
+  context.currentNode = node
+  let i = exitFns.length
+  while(i--){
+    exitFns[i]()
+  }
+
 }
 
-// 遍历转化节点 深度优先 子->父
-export function traverseNode() {
-  
+export function traverseChildren(parent, context: TransformConText) {
+  parent.children.forEach((node,index)=>{
+    context.parent = parent
+    context.childrenIndex = index
+    traverseNode(node, context)
+  })
 }
