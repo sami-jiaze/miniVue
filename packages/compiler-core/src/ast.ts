@@ -1,3 +1,5 @@
+import { CREATE_ELEMENT_VONDE } from "./runtimeHelprs";
+
 export const enum NodeTypes {
   ROOT,
   ELEMENT,
@@ -41,4 +43,17 @@ export const enum ElementTypes {
   SLOT,
   // template
   TEMPLATE,
+}
+
+export function createVNodeCall(context, tag, props?, children?) {
+  if (context) {
+    context.helper(CREATE_ELEMENT_VONDE)
+  }
+
+  return {
+    type: NodeTypes.VNODE_CALL,
+    tag,
+    props,
+    children
+  }
 }
