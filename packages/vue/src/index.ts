@@ -12,4 +12,4 @@ export {
 
 export { render } from '@myvue/runtime-dom'
 
-export { compile } from '@myvue/compiler-dom'
+export { compile } from '@myvue/vue-compat'
