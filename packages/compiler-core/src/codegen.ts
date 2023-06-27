@@ -106,17 +106,19 @@ function genNode(node, context) {
 
 // 处理 TEXT 节点
 function genText(node, context) {
-  context.push(JSON.stringify(node.context), node)
+  context.push(JSON.stringify(node.content), node)
 }
 
 // 处理 VNODE_CALL 节点
 function genVNodeCall(node, context) {
   const { push, helper } = context
   const { tag, props, children, patchFlag, dynamicProps, isComponent } = node
+  // 返回 vnode 生成函数
   const callHelper = getVNodeHelper(context.isSSR, isComponent)
-  push(helper(callHelper) + `(`)
+  push(helper(callHelper) + `(`, node)
+  // 获取函数参数
   const args = genNullableArgs([tag, props, children, patchFlag, dynamicProps])
-
+  // console.log(args);
   genNodeList(args, context)
   push(')')
 }
