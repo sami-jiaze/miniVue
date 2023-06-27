@@ -14,6 +14,10 @@ export function generate(ast) {
   push(`function ${functionName}(${signature}) {`)
   indent()
 
+  // 增加 with 触发
+  push(`with (_ctx) {`)
+  indent()
+
   const hasHelpers = ast.helpers.length > 0
   if (hasHelpers) {
     push(`const {${ast.helpers.map(aliasHelpr).join(', ')}} = _Vue`)
@@ -28,6 +32,10 @@ export function generate(ast) {
   } else {
     push(`null`)
   }
+
+  // with 结尾
+  deindent()
+  push('}')
 
   deindent()
   push('}')
@@ -96,9 +104,12 @@ function genNode(node, context) {
   }
 }
 
+// 处理 TEXT 节点
 function genText(node, context) {
   context.push(JSON.stringify(node.context), node)
 }
+
+// 处理 VNODE_CALL 节点
 function genVNodeCall(node, context) {
   const { push, helper } = context
   const { tag, props, children, patchFlag, dynamicProps, isComponent } = node
