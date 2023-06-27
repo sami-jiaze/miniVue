@@ -17,8 +17,8 @@ export function generate(ast) {
   indent()
 
   // 增加 with 触发
-  push(`with (_ctx) {`)
-  indent()
+  // push(`with (_ctx) {`)
+  // indent()
 
   const hasHelpers = ast.helpers.length > 0
   if (hasHelpers) {
@@ -36,8 +36,8 @@ export function generate(ast) {
   }
 
   // with 结尾
-  deindent()
-  push('}')
+  // deindent()
+  // push('}')
 
   deindent()
   push('}')
@@ -52,7 +52,7 @@ function createCodegenContext(ast) {
   const context = {
     isSSR: false,
     code: '',
-    runtimeGlobalName: 'Vue',
+    runtimeGlobalName: 'myVue',
     source: ast.loc.source,
     // 缩进
     indentLevel: 0,
@@ -88,7 +88,7 @@ function genFunctionPreamble(context) {
   push(`return `)
 }
 
-const aliasHelpr = (s: symbol) => `${helperNameMap[s]}: _${helperNameMap[s]}}`
+const aliasHelpr = (s: symbol) => `${helperNameMap[s]}: _${helperNameMap[s]}`
 
 // 节点处理
 function genNode(node, context) {
