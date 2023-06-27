@@ -1,4 +1,5 @@
 import { NodeTypes } from './ast'
+import { isSingleElementRoot } from './hoistStatic'
 
 export interface TransformConText {
   root
@@ -14,6 +15,15 @@ export function transform(root, options) {
   // 生成上下文对象
   const context = createTransformContext(root, options)
   traverseNode(root, context)
+  createRootCodegen(root)
+  root.helpers = [...context.helpers.keys()]
+
+  root.components = []
+  root.directives = []
+  root.imports = []
+  root.hoists = []
+  root.temps = []
+  root.cached = []
 }
 
 // 创建 transform 上下文
@@ -52,6 +62,7 @@ export function traverseNode(node, context: TransformConText) {
     case NodeTypes.ELEMENT:
       break
     case NodeTypes.ROOT:
+      traverseChildren(node, context)
       break
 
     default:
@@ -60,16 +71,27 @@ export function traverseNode(node, context: TransformConText) {
 
   context.currentNode = node
   let i = exitFns.length
-  while(i--){
+  while (i--) {
     exitFns[i]()
   }
-
 }
 
 export function traverseChildren(parent, context: TransformConText) {
-  parent.children.forEach((node,index)=>{
+  parent.children.forEach((node, index) => {
     context.parent = parent
     context.childrenIndex = index
     traverseNode(node, context)
   })
+}
+
+function createRootCodegen(root) {
+  const { children } = root
+  // Vue2 单节点
+  if (children.length === 1) {
+    const child = children[0]
+    if (isSingleElementRoot(root, child) && child.codegenNode) {
+      root.codegenNode = child.codegenNode
+    }
+  }
+  // Vue3
 }
