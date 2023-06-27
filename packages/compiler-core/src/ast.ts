@@ -57,3 +57,12 @@ export function createVNodeCall(context, tag, props?, children?) {
     children
   }
 }
+
+// 生成复合表达式
+export function createCompoundExpression(children, loc) {
+	return {
+		type: NodeTypes.COMPOUND_EXPRESSION,
+		loc,
+		children
+	}
+}
