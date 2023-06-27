@@ -35,6 +35,7 @@ export function createVNode(type, props, children?): VNode {
     : 0
   return createBaseVNode(type, props, children, shapeFlag)
 }
+export { createVNode as createElementVNode }
 
 function createBaseVNode(type: any, props: any, children: any, shapeFlag) {
   const vnode = {
@@ -74,6 +75,6 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
 }
 
 // 是否是同一个元素
-export function isSameVNodeType(v1: VNode, v2: VNode){
+export function isSameVNodeType(v1: VNode, v2: VNode) {
   return v1.type === v2.type && v1.key === v2.key
 }
