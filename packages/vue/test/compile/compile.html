@@ -18,9 +18,11 @@
     const { code } = compile(template)
     // console.log(renderFn.ast);
     // console.log(code);
-    const renderFn = new Function(code)()
+    // const renderFn = new Function(code)()
     // console.log(renderFn);
 
+    const renderFn = compile(template)
+    
     const component = {
       render: renderFn
     }
