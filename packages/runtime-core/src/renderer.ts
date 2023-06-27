@@ -51,6 +51,7 @@ function baseCreateRenderer(options: RendererOptions) {
     }
   }
   const processText = (oldVNode, newVNode, container, anchor) => {
+    // console.log(oldVNode, newVNode, container, anchor);
     if (oldVNode === null) {
       newVNode.el = hostCreateText(newVNode.children)
       hostInsert(newVNode.el, container, anchor)
@@ -78,6 +79,7 @@ function baseCreateRenderer(options: RendererOptions) {
       patchChildren(oldVNode, newVNode, container, anchor)
     }
   }
+  // 组件的打补丁操作
   const processComponent = (oldVNode, newVNode, container, anchor) => {
     if (oldVNode === null) {
       mountComponent(newVNode, container, anchor)
@@ -123,6 +125,7 @@ function baseCreateRenderer(options: RendererOptions) {
     setupRenderEffect(instance, initialVNode, container, anchor)
   }
 
+  // 设置组件渲染
   const setupRenderEffect = (instance, initialVNode, container, anchor) => {
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
@@ -132,9 +135,11 @@ function baseCreateRenderer(options: RendererOptions) {
         }
         const subTree = (instance.subTree = renderComponentRoot(instance))
         patch(null, subTree, container, anchor)
+
         if (m) {
           m()
         }
+        // 把组件根节点的 el，作为组件的 el
         initialVNode.el = subTree.el
         instance.isMounted = true
       } else {
@@ -142,10 +147,13 @@ function baseCreateRenderer(options: RendererOptions) {
         if (!next) {
           next = vnode
         }
+        // 获取下一次的 subTree
         const nextTree = renderComponentRoot(instance)
+        // 保存对应的 subTree，以便进行更新操作
         const prevTree = instance.subTree
         instance.subTree = nextTree
         patch(prevTree, nextTree, container, anchor)
+        // 更新 next
         next.el = nextTree.el
       }
     }
@@ -454,9 +462,6 @@ function baseCreateRenderer(options: RendererOptions) {
   }
 
   const render = (vnode, container) => {
-    // console.log("render vnode: ", vnode);
-    // console.log("render container: ", container);
-
     if (vnode === null) {
       // 卸载
       if (container._vnode) {
@@ -468,6 +473,7 @@ function baseCreateRenderer(options: RendererOptions) {
     }
 
     container._vnode = vnode
+    // console.log("render", vnode);
   }
 
   return { render }
