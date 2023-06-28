@@ -114,6 +114,7 @@ function genNode(node, context) {
     case NodeTypes.ELEMENT:
     case NodeTypes.IF:
       genNode(node.codegenNode, context)
+      break
     // JS调用表达式的处理
     case NodeTypes.JS_CALL_EXPRESSION:
       genCallExpression(node, context)
@@ -240,7 +241,6 @@ function genNullableArgs(args: any[]) {
 // 参数的填充
 function genNodeList(nodes, context) {
   // console.log(nodes)
-  debugger
 
   const { push, newline } = context
   for (let i = 0; i < nodes.length; i++) {
