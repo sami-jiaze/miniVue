@@ -1,6 +1,6 @@
 import { isArray, isString } from '@myvue/shared'
 import { NodeTypes } from './ast'
-import { helperNameMap } from './runtimeHelprs'
+import { TO_DISPLAY_STRING, helperNameMap } from './runtimeHelprs'
 import { getVNodeHelper } from './utils'
 
 export function generate(ast) {
@@ -99,6 +99,14 @@ function genNode(node, context) {
     case NodeTypes.VNODE_CALL:
       genVNodeCall(node, context)
       break
+    // 插值表达式处理
+    case NodeTypes.INTERPOLATION:
+      genInterpolation(node, context)
+      break
+    // 复合表达式处理
+    case NodeTypes.SIMPLE_EXPRESSION:
+      genExpression(node, context)
+      break
     default:
       break
   }
@@ -121,6 +129,20 @@ function genVNodeCall(node, context) {
   // console.log(args);
   genNodeList(args, context)
   push(')')
+}
+
+// 表达式处理
+function genExpression(node, context) {
+  const { content, isStatic } = node
+  context.push(isStatic ? JSON.stringify(content) : content, node)
+}
+
+// 插值表达值
+function genInterpolation(node, context) {
+  const { push, helper } = context
+  push(`${helper(TO_DISPLAY_STRING)}(`)
+  genNode(node.content, context)
+  push(`)`)
 }
 
 // 剔除无效参数
