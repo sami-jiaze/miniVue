@@ -122,11 +122,14 @@ function parseTag(context: ParseContext, type: TagType) {
   // 自闭合与非自闭合标签判断
   let isSelfClosing = context.source.startsWith('/>')
   advanceBy(context, isSelfClosing ? 2 : 1)
+  // 标签类型
+	let tagType = ElementTypes.ELEMENT
   return {
     type: NodeTypes.ELEMENT,
     tag,
-    tagType: ElementTypes.ELEMENT,
-    props: [],
+    tagType,
+    // 属性与指令
+    props,
     children: [],
   }
 }
