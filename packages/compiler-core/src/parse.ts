@@ -38,6 +38,7 @@ function parseChildren(context: ParseContext, ancestors) {
     let noder: any
     // 模板语法处理
     if (s.startsWith('{{')) {
+      noder = parseInterpolation(context)
     } else if (s[0] === '<') {
       // 标签开始
       if (/[a-z]/i.test(s[1])) {
@@ -51,6 +52,29 @@ function parseChildren(context: ParseContext, ancestors) {
     pushNode(nodes, noder)
   }
   return nodes
+}
+
+// 解析插值表达式
+function parseInterpolation(context: ParseContext) {
+	const [open, close] = ['{{', '}}']
+
+	advanceBy(context, open.length)
+
+	// 获取插值表达式中间的值
+	const closeIndex = context.source.indexOf(close, open.length)
+	const preTrimContent = parseTextData(context, closeIndex)
+	const content = preTrimContent.trim()
+
+	advanceBy(context, close.length)
+
+	return {
+		type: NodeTypes.INTERPOLATION,
+		content: {
+			type: NodeTypes.SIMPLE_EXPRESSION,
+			isStatic: false,
+			content
+		}
+	}
 }
 
 // 判断是否是结束标签
