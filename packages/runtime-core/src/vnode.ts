@@ -78,3 +78,7 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
 export function isSameVNodeType(v1: VNode, v2: VNode) {
   return v1.type === v2.type && v1.key === v2.key
 }
+
+export function createCommentVNode(text) {
+	return createVNode(Comment, null, text)
+}
