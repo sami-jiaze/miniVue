@@ -17,8 +17,8 @@ export function generate(ast) {
   indent()
 
   // 增加 with 触发
-  // push(`with (_ctx) {`)
-  // indent()
+  push(`with (_ctx) {`)
+  indent()
 
   const hasHelpers = ast.helpers.length > 0
   if (hasHelpers) {
@@ -36,8 +36,8 @@ export function generate(ast) {
   }
 
   // with 结尾
-  // deindent()
-  // push('}')
+  deindent()
+  push('}')
 
   deindent()
   push('}')

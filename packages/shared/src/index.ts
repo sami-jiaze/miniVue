@@ -32,3 +32,5 @@ const onRE = /^on[A-Z]/
 export const isOn = (key: string) => {
   return onRE.test(key)
 }
+
+export { toDisplayString } from './toDisplayString'
