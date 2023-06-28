@@ -110,6 +110,8 @@ function genNode(node, context) {
     case NodeTypes.SIMPLE_EXPRESSION:
       genExpression(node, context)
       break
+    case NodeTypes.ELEMENT:
+      genNode(node.codegenNode, context)
     default:
       break
   }
