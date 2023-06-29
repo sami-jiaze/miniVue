@@ -3,6 +3,7 @@ import { isFunction, isObject } from '@myvue/shared'
 import { onBeforeMount, onMounted } from './apiLifecycle'
 
 let uid = 0
+let compile: any = null
 
 export const enum LifecycleHooks {
   BEFORE_CREATE = 'bc',
@@ -51,11 +52,22 @@ function setupStatefulComponent(instance) {
 export function finishComponentSetup(instance) {
   const Component = instance.type
 
+  // 兼容使用模板的情况
   if (!instance.render) {
+    if (compile && !Component.render) {
+      if (Component.template) {
+        const template = Component.template
+        Component.render = compile(template)
+      }
+    }
     instance.render = Component.render
   }
 
   applyOptions(instance)
+}
+
+export function registerRuntimeCompiler(_compile: any) {
+  compile = _compile
 }
 
 function applyOptions(instance) {
