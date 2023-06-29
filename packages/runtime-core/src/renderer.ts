@@ -6,6 +6,7 @@ import { createComponentInstance, setupComponent } from './component'
 import { ReactiveEffect } from 'packages/reactivity/src/effect'
 import { queuePreFlushCb } from './scheduler'
 import { getSequence } from 'packages/shared/src/getSequence'
+import { createAppAPI } from './apiCreateApp'
 
 export interface RendererOptions {
   // 为指定 element 的 prop 打补丁
@@ -476,5 +477,8 @@ function baseCreateRenderer(options: RendererOptions) {
     // console.log("render", vnode);
   }
 
-  return { render }
+  return { 
+    render,
+    createApp: createAppAPI(render)
+   }
 }
