@@ -17,7 +17,7 @@
     <div id="p3"></div>
   </div>
   <script>
-    const { myRef, myEffect } = myVue;
+    const { myRef, myEffect, myReactive } = myVue;
 
     const obj = myRef({
       name: 'rio'
@@ -42,6 +42,24 @@
 
     console.log("obj", obj);
     console.log("name", name);
+
+    
+    // const obj = myReactive({
+    //   name: 'rio',
+    //   res: true
+    // })
+
+    // myEffect(() => {
+    //   document.querySelector('#p1').innerText = obj.res ? obj.name : 'not';
+    // })
+    // myEffect(() => {
+    //   document.querySelector('#p2').innerText = obj.name;
+    // })
+
+    // setTimeout(() => {
+    //   obj.res = false;
+    //   obj.name = 'Rio'
+    // }, 2000);
   </script>
 </body>
 

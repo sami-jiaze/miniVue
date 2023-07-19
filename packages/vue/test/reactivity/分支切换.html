@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+
+  <script>
+    const { myRef, myEffect, myReactive } = myVue;
+    let pro = myReactive({ name: 'rio', ok: true })
+    myEffect(() => {
+      console.log('effect');
+      document.body.innerHTML = pro.ok ? pro.name : "not"
+    })
+    setTimeout(() => {
+      pro.ok = false
+    }, 1000);
+    setTimeout(() => {
+      // 此时effect中走“not”分支 不需要触发pro.name的依赖函数
+      pro.name = 'RIO'
+    }, 2000);
+  </script>
+</body>
+
+</html>
