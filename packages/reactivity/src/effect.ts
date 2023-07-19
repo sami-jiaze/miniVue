@@ -1,8 +1,8 @@
 import { extend, isArray } from '@myvue/shared'
 import { ComputedRefImpl } from './computed'
+import { Dep } from './dep'
 
 // 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
-export type Dep = Set<ReactiveEffect>
 export type EffectScheduler = (...args: any[]) => any
 export interface ReactiveEffectOptions {
   lazy?: boolean
@@ -37,6 +37,8 @@ export function myEffect<T = any>(
 
 // 调度器scheduler 作用是控制执行顺序
 export class ReactiveEffect<T = any> {
+  // 分支处理 依赖数组
+  deps: Dep[] = []
   computed?: ComputedRefImpl<T>
   constructor(
     public fn: () => T,
@@ -44,6 +46,9 @@ export class ReactiveEffect<T = any> {
   ) {}
 
   run() {
+    // 在每次副作用函数重新执行之前，清除上一次建立的响应联系
+    // 解决分支切换导致的冗余副作用的问题
+    cleanupEffect(this)
     activeEffect = this
     return this.fn()
   }
@@ -80,7 +85,7 @@ export function trigger(target: object, key: unknown, newValue: unknown) {
   // 会出现一个key只能绑定一个effect的bug
   // const effect = depsMap.get(key) as ReactiveEffect
 
-  // key已经绑定了多个effect 现在依次执行
+  // 获取对应的 target - key - effect
   const effect: Dep | undefined = depsMap.get(key)
 
   if (!effect) return
@@ -93,6 +98,9 @@ export function trigger(target: object, key: unknown, newValue: unknown) {
 // 利用 dep 依次跟踪指定 key 的所有 effect
 export function trackEffects(dep: Dep) {
   dep.add(activeEffect!)
+  // dep 就是一个与当前副作用函数存在联系的依赖集合
+  // 将其添加到 activeEffect.deps 数组中
+  activeEffect!.deps.push(dep)
 }
 
 // 触发指定 key 的所有 effect 依赖
@@ -118,4 +126,13 @@ export function triggerEffect(effect: ReactiveEffect) {
   } else {
     effect.run()
   }
+}
+
+// 清除建立的响应联系
+function cleanupEffect(effectFn: ReactiveEffect) {
+  const { deps } = effectFn
+  for (let i = 0; i < deps.length; i++) {
+    deps[i].delete(effectFn)
+  }
+  deps.length = 0
 }
