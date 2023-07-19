@@ -52,7 +52,7 @@ export class ReactiveEffect<T = any> {
 
 // 收集依赖
 export function track(target: object, key: unknown) {
-  console.log('依赖收集', target, key)
+  // console.log('依赖收集', target, key)
   if (!activeEffect) return
   let depsMap = targetMap.get(target)
   if (!depsMap) {
@@ -68,12 +68,12 @@ export function track(target: object, key: unknown) {
   }
   trackEffects(dep)
 
-  console.log('targetMap', targetMap)
+  // console.log('targetMap', targetMap)
 }
 
 // 触发依赖
 export function trigger(target: object, key: unknown, newValue: unknown) {
-  console.log('依赖触发', target, key, newValue)
+  // console.log('依赖触发', target, key, newValue)
   const depsMap = targetMap.get(target)
   if (!depsMap) return
 
