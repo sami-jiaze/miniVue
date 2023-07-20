@@ -1,5 +1,6 @@
 import { isFunction } from '@myvue/shared'
-import { Dep, ReactiveEffect } from './effect'
+import { ReactiveEffect } from './effect'
+import { Dep } from './dep'
 import { trackRefValue, triggerRefValue } from './ref'
 
 export function myComputed(getterOrOptions) {

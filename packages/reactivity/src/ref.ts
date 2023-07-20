@@ -1,11 +1,11 @@
 import { hasChanged } from '@myvue/shared'
 import {
-  Dep,
   activeEffect,
   createDep,
   trackEffects,
   triggerEffects,
 } from './effect'
+import { Dep } from './dep'
 import { toReactive } from './reactive'
 
 export interface Ref<T = any> {
