@@ -1,6 +1,7 @@
 import { extend, isArray } from '@myvue/shared'
 import { ComputedRefImpl } from './computed'
 import { Dep } from './dep'
+import { TriggerOpTypes } from './operations'
 
 // 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
 export type EffectScheduler = (...args: any[]) => any
@@ -19,6 +20,8 @@ const targetMap = new WeakMap<any, keytoDepMap>()
 
 // 标记当前被执行的effect
 export let activeEffect: ReactiveEffect | undefined
+// for in
+export const ITERATE_KEY = Symbol()
 
 // myEffect 主函数
 export function myEffect<T = any>(
@@ -77,20 +80,29 @@ export function track(target: object, key: unknown) {
 }
 
 // 触发依赖
-export function trigger(target: object, key: unknown, newValue: unknown) {
-  // console.log('依赖触发', target, key, newValue)
+export function trigger(target: object, key: unknown, type: TriggerOpTypes) {
   const depsMap = targetMap.get(target)
   if (!depsMap) return
-
-  // 会出现一个key只能绑定一个effect的bug
-  // const effect = depsMap.get(key) as ReactiveEffect
-
   // 获取对应的 target - key - effect
   const effect: Dep | undefined = depsMap.get(key)
 
+  const effectsToRun: any = []
   if (!effect) return
-  // 若不为空则触发依赖函数
-  // effect.fn()
+  // 将与 key 相关联的副作用函数添加到 effectsToRun
+  effect.forEach((fn) => {
+    if (fn !== activeEffect) effectsToRun.add(fn)
+  })
+
+  // 只有当操作类型为 'ADD' 时，才触发与 ITERATE_KEY 相关联的副作用函数
+  if (type === TriggerOpTypes.ADD || type === TriggerOpTypes.DELETE) {
+    // 取得与 ITERATE_KEY 相关联的副作用函数
+    const iterateEffects = depsMap.get(ITERATE_KEY)
+    // 将与 ITERATE_KEY 相关联的副作用函数也添加到 effectsToRun
+    iterateEffects &&
+      iterateEffects.forEach((fn) => {
+        if (fn !== activeEffect) effectsToRun.add(fn)
+      })
+  }
 
   triggerEffects(effect)
 }
