@@ -24,6 +24,8 @@ const targetMap = new WeakMap<any, keytoDepMap>()
 
 // 标记当前被执行的effect
 export let activeEffect: ReactiveEffect | undefined
+// 正在执行的effect栈
+const effectStack: ReactiveEffect[] = []
 // for in
 export const ITERATE_KEY = Symbol()
 
@@ -52,7 +54,7 @@ export let shouldTrack = true
 export class ReactiveEffect<T = any> {
   // 当前对象是否是有效的，为false则是已加stop的了
   active = true
-  // 分支处理 依赖数组 
+  // 分支处理 依赖数组
   deps: Dep[] = []
   computed?: ComputedRefImpl<T>
   constructor(
@@ -62,13 +64,22 @@ export class ReactiveEffect<T = any> {
   ) {}
 
   run() {
-     // 如果当前effect已经被stop 直接监听函数，不做收集逻辑
-    if (!this.active) return this.fn()
+    // 如果当前effect已经被stop 直接监听函数，不做收集逻辑
+    // if (!this.active) return this.fn()
+
     // 在每次副作用函数重新执行之前，清除上一次建立的响应联系
     // 解决分支切换导致的冗余副作用的问题
     cleanupEffect(this)
     activeEffect = this
-    return this.fn()
+    // 嵌套问题 在调用副作用函数之前将当前副作用函数压入栈中
+    effectStack.push(this)
+    const result = this.fn()
+    // 在当前副作用函数执行完毕后，将当前副作用函数弹出栈，
+    // 并把activeEffect 还原为之前的值
+    effectStack.pop()
+    activeEffect = effectStack[effectStack.length - 1]
+
+    return result
   }
   stop() {}
 }
