@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+
+</head>
+
+<body>
+  <script>
+    const { myReactive, myRef, myEffect } = myVue
+
+    // 自动解构
+    // 使用reactive和readonly时会自动解构对象且不包括是数组子项的Ref对象
+    // 无论解构有多深 而 shallow类的对象则不会自动解构
+    // 只有一层也不会自动解构
+
+    const observed1 = myReactive({
+      a: myRef(1),
+      b: {
+        c: myRef(1)
+      },
+      e: myRef({ c: myRef(1) }),
+      d: [myRef(1), { a: myRef(2) }]
+    })
+    const observed2 = myReactive({
+      d: [myRef(1)]
+    })
+    observed2._a = myRef({ v: 1 })
+
+    // Number 1
+    console.log(observed1.a)
+    // Number 1
+    console.log(observed1.b.c)
+    // Number 1
+    console.log(observed1.e.c)
+    // RefImpl value: Number 1
+    console.log(observed1.d[0])
+    // Number 1
+    console.log(observed1.d[1].a)
+    // RefImpl value: Number 1
+    console.log(observed2.d[0])
+    // Number 1
+    console.log(observed2._a.v)
+
+    // const shallowObserved = shallowmyReactive({
+    //   a: ref(1)
+    // })
+    // // RefImpl value: Number 1
+    // console.log(observed.a)
+
+
+    // 对象转换
+    // reactive对象与readonly对象互相转换时
+    // readonly对象不可转为reactive reactive可以转为readonly
+    // 但是转化的对象使用isReactive和isReadonly函数调用时都是返回true
+
+    // const are = myReactive({ a: 2 });
+    // const aro = readonly(are);
+    // // true
+    // console.log(isReactive(aro));
+    // // true
+    // console.log(isReadonly(aro));
+
+    // const bre = readonly({ b: 2 });
+    // const bro = myReactive(bre);
+    // // false
+    // console.log(isReactive(bro));
+    // // true
+    // console.log(isReadonly(bro));
+
+    console.log('-----');
+    // 在Proxy获取的数据应该始终是Proxy，否则当用户修改里面的子对象时无法监听
+    const rt = myReactive({ a: { b: 3 } })
+    // 代理内部也应该将 rt.a 转化为代理
+    const ra = rt.a
+    myEffect(() => {
+      // 收集到依赖
+      console.log(ra.b)
+    })
+    // 触发重新执行effect
+    ra.b = 4
+
+
+  </script>
+</body>
+
+</html>
