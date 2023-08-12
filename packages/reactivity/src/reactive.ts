@@ -9,7 +9,7 @@ export const enum ReactiveFlags {
   // 是否阻止成为代理属性
   SKIP = '__v_skip',
   // mark target
-  RAW = '__v_raw'
+  RAW = '__v_raw',
 }
 
 export function isReactive(value: boolean) {
@@ -21,8 +21,14 @@ export const toReactive = <T extends unknown>(value: T): T => {
 // 代理缓存的map
 export const reactiveMap = new WeakMap<object, any>()
 
+export function shallowReactive(target: object) {
+
+}
+
 // reactive 主函数 target为被代理对象
 export function myReactive(target: object) {
+  // 如果reactive进入的是readonly的话直接返回，保持只读
+  // if (target && target[ReactiveFlags.IS_READONLY]) return target
   return createReactiveObject(target, false, mutableHandlers, reactiveMap)
 }
 
@@ -34,9 +40,9 @@ function createReactiveObject(
   proxyMap: WeakMap<object, any>,
 ) {
   // 如果代理的数据不是obj则直接返回原对象
-  if (isObject(target)) {
-    return target
-  }
+  // if (isObject(target)) {
+  //   return target
+  // }
   const exisitProxy = proxyMap.get(target)
   if (exisitProxy) return exisitProxy
 
