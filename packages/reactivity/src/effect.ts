@@ -45,20 +45,25 @@ export function myEffect<T = any>(
   const runner = _effect.run.bind(_effect) as ReactiveEffectRunner
   runner.effect = _effect
   return runner
-  // console.log('runner', runner)
 }
 
-// 调度器scheduler 作用是控制执行顺序
+export let shouldTrack = true
+
 export class ReactiveEffect<T = any> {
-  // 分支处理 依赖数组
+  // 当前对象是否是有效的，为false则是已加stop的了
+  active = true
+  // 分支处理 依赖数组 
   deps: Dep[] = []
   computed?: ComputedRefImpl<T>
   constructor(
     public fn: () => T,
+    // 调度器scheduler 作用是控制执行顺序
     public scheduler: EffectScheduler | null = null,
   ) {}
 
   run() {
+     // 如果当前effect已经被stop 直接监听函数，不做收集逻辑
+    if (!this.active) return this.fn()
     // 在每次副作用函数重新执行之前，清除上一次建立的响应联系
     // 解决分支切换导致的冗余副作用的问题
     cleanupEffect(this)
