@@ -3,6 +3,10 @@ import { ITERATE_KEY, track, trigger } from './effect'
 import { TriggerOpTypes } from './operations'
 
 const get = createGetter()
+const shallowGet = createGetter(false, true)
+const readonlyGet = createGetter(true)
+const shallowReadonlyGet = createGetter(true, true)
+
 const set = createSetter()
 
 function createGetter(isReadonly = false, shallow = false) {
