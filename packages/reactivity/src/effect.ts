@@ -9,6 +9,10 @@ export interface ReactiveEffectOptions {
   lazy?: boolean
   scheduler?: EffectScheduler
 }
+export interface ReactiveEffectRunner<T = any> {
+  (): T
+  effect: ReactiveEffect
+}
 
 export const createDep = (effects?: ReactiveEffect[]) => {
   const dep = new Set<ReactiveEffect>(effects) as Dep
@@ -86,12 +90,13 @@ export function trigger(target: object, key: unknown, type: TriggerOpTypes) {
   // 获取对应的 target - key - effect
   const effect: Dep | undefined = depsMap.get(key)
 
-  const effectsToRun: any = []
+  const effectsToRun = new Set()
   if (!effect) return
   // 将与 key 相关联的副作用函数添加到 effectsToRun
-  effect.forEach((fn) => {
-    if (fn !== activeEffect) effectsToRun.add(fn)
-  })
+  effect &&
+    effect.forEach((fn) => {
+      if (fn !== activeEffect) effectsToRun.add(fn)
+    })
 
   // 只有当操作类型为 'ADD' 时，才触发与 ITERATE_KEY 相关联的副作用函数
   if (type === TriggerOpTypes.ADD || type === TriggerOpTypes.DELETE) {
