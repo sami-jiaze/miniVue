@@ -112,7 +112,7 @@ export function trigger(target: object, key: unknown, type: TriggerOpTypes) {
   // 获取对应的 target - key - effect
   const effect: Dep | undefined = depsMap.get(key)
 
-  const effectsToRun = new Set()
+  const effectsToRun: Dep = new Set()
   if (!effect) return
   // 将与 key 相关联的副作用函数添加到 effectsToRun
   effect &&
@@ -131,7 +131,7 @@ export function trigger(target: object, key: unknown, type: TriggerOpTypes) {
       })
   }
 
-  triggerEffects(effect)
+  triggerEffects(effectsToRun)
 }
 
 // 利用 dep 依次跟踪指定 key 的所有 effect
