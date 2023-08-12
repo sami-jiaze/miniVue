@@ -5,12 +5,13 @@ import { TriggerOpTypes } from './operations'
 const get = createGetter()
 const set = createSetter()
 
-function createGetter() {
+function createGetter(isReadonly = false, shallow = false) {
   return function get(target: object, key: string | symbol, receiver: object) {
     const res = Reflect.get(target, key, receiver)
-
-    // 收集依赖
-    track(target, key)
+    if (!isReadonly && typeof key !== 'symbol') {
+      // 收集依赖
+      track(target, key)
+    }
 
     return res
   }
@@ -57,10 +58,14 @@ function ownKeys(target: object): (string | symbol)[] {
   return Reflect.ownKeys(target)
 }
 
+// reactive拦截器
 export const mutableHandlers: ProxyHandler<object> = {
   get,
   set,
   deleteProperty,
   has,
-  ownKeys
+  ownKeys,
 }
+
+// readonly拦截器
+export const readonlyHandlers: ProxyHandler<object> = {}
