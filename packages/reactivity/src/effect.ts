@@ -40,6 +40,12 @@ export function myEffect<T = any>(
   if (!options || !options.lazy) {
     _effect.run()
   }
+  // 把 _effect.run 这个方法返回
+  // 让用户可以自行选择调用的时机调用 fn
+  const runner = _effect.run.bind(_effect) as ReactiveEffectRunner
+  runner.effect = _effect
+  return runner
+  // console.log('runner', runner)
 }
 
 // 调度器scheduler 作用是控制执行顺序
