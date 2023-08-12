@@ -2,8 +2,16 @@ import { isObject } from '@myvue/shared'
 import { mutableHandlers } from './baseHandlers'
 
 export const enum ReactiveFlags {
+  // 是否是reactive属性
   IS_REACTIVE = '__v_isReactive',
+  // 是否是readonly属性
+  IS_READONLY = '__v_isReadonly',
+  // 是否阻止成为代理属性
+  SKIP = '__v_skip',
+  // mark target
+  RAW = '__v_raw'
 }
+
 export function isReactive(value: boolean) {
   return !!(value && value[ReactiveFlags.IS_REACTIVE])
 }
@@ -15,14 +23,20 @@ export const reactiveMap = new WeakMap<object, any>()
 
 // reactive 主函数 target为被代理对象
 export function myReactive(target: object) {
-  return createReactiveObject(target, mutableHandlers, reactiveMap)
+  return createReactiveObject(target, false, mutableHandlers, reactiveMap)
 }
 
 function createReactiveObject(
+  // 要代理的数据
   target: object,
+  isReadonly: boolean,
   baseHandlers: ProxyHandler<any>,
   proxyMap: WeakMap<object, any>,
 ) {
+  // 如果代理的数据不是obj则直接返回原对象
+  if (isObject(target)) {
+    return target
+  }
   const exisitProxy = proxyMap.get(target)
   if (exisitProxy) return exisitProxy
 
