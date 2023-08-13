@@ -20,15 +20,17 @@
 
     myEffect(() => {
       console.log(obj.num);
-    }, {
-      scheduler() {
-        queuePreFlushCb(() => {
-          console.log(333);
-        })
+    },
+       {
+        scheduler(fn) {
+          queuePreFlushCb(fn)
+        }
       }
-    })
+    )
 
-    obj.num = 10
+    obj.num++
+    obj.num++
+    obj.num++
 
     console.log('end');
   </script>

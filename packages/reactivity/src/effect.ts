@@ -3,7 +3,6 @@ import { ComputedRefImpl } from './computed'
 import { Dep } from './dep'
 import { TriggerOpTypes } from './operations'
 
-// 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
 export type EffectScheduler = (...args: any[]) => any
 export interface ReactiveEffectOptions {
   lazy?: boolean
@@ -161,7 +160,9 @@ export function triggerEffects(dep: Dep) {
 // 触发指定依赖
 export function triggerEffect(effect: ReactiveEffect) {
   if (effect.scheduler) {
-    effect.scheduler()
+    effect.scheduler(effect.fn)
+    
+    // effect.scheduler()
   } else {
     effect.run()
   }
