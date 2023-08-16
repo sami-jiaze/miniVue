@@ -105,20 +105,49 @@ export function track(target: object, key: unknown) {
 }
 
 // 触发依赖
-export function trigger(target: object, key: unknown, type: TriggerOpTypes) {
+export function trigger(
+  target: object,
+  key: unknown,
+  type: TriggerOpTypes,
+  newVal,
+) {
   const depsMap = targetMap.get(target)
   if (!depsMap) return
   // 获取对应的 target - key - effect
   const effect: Dep | undefined = depsMap.get(key)
 
   const effectsToRun: Dep = new Set()
-  if (!effect) return
+  // if (!effect) return
   // 将与 key 相关联的副作用函数添加到 effectsToRun
   effect &&
     effect.forEach((fn) => {
       if (fn !== activeEffect) effectsToRun.add(fn)
     })
 
+  // 当操作类型为 ADD 并且目标对象是数组时，应该取出并执行那些与 length属性相关联的副作用函数
+  if (type === TriggerOpTypes.ADD && Array.isArray(target)) {
+    // 取出与 length 相关联的副作用函数
+    const lengthEffects = depsMap.get('length')
+
+    lengthEffects &&
+      lengthEffects.forEach((fn) => {
+        if (fn !== activeEffect) {
+          effectsToRun.add(fn)
+        }
+      })
+  }
+  // 如果操作目标是数组，并且修改了数组的 length 属性
+  if (Array.isArray(target) && key === 'length') {
+    // 对于索引大于或等于新的 length 值的元素，
+    // 需要把所有相关联的副作用函数取出并添加到 effectsToRun 中待执行
+    depsMap.forEach((effectfns, key) => {
+      if (key >= newVal) {
+        effectfns.forEach((effectFn) => {
+          if (effectFn !== activeEffect) effectsToRun.add(effectFn)
+        })
+      }
+    })
+  }
   // 只有当操作类型为 'ADD' 时，才触发与 ITERATE_KEY 相关联的副作用函数
   if (type === TriggerOpTypes.ADD || type === TriggerOpTypes.DELETE) {
     // 取得与 ITERATE_KEY 相关联的副作用函数
@@ -161,7 +190,7 @@ export function triggerEffects(dep: Dep) {
 export function triggerEffect(effect: ReactiveEffect) {
   if (effect.scheduler) {
     effect.scheduler(effect.fn)
-    
+
     // effect.scheduler()
   } else {
     effect.run()
