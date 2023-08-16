@@ -11,6 +11,8 @@ const set = createSetter()
 
 function createGetter(isReadonly = false, shallow = false) {
   return function get(target: object, key: string | symbol, receiver: object) {
+    // 代理对象可以通过 raw 属性访问原始数据
+    if (key === 'raw') return target
     const res = Reflect.get(target, key, receiver)
     if (!isReadonly && typeof key !== 'symbol') {
       // 收集依赖
@@ -26,15 +28,21 @@ function createSetter() {
     target: object,
     key: string | symbol,
     value: unknown,
-    receiver: object,
+    receiver: any,
   ) {
+    const oldVal = target[key]
     const res = Reflect.set(target, key, value, receiver)
     // 如果属性不存在，则说明是在添加新属性，否则是设置已有属性
     const type = Object.prototype.hasOwnProperty.call(target, key)
       ? TriggerOpTypes.SET
       : TriggerOpTypes.ADD
-    // 触发依赖
-    trigger(target, key, type)
+
+    // target === receiver.raw 说明 receiver 就是 target 的代理对象
+    if (target === receiver.raw) {
+      // 比较新值与旧值，当不全等的时候且不是 NaN,才触发依赖
+      if (oldVal !== value && (oldVal === oldVal || value === value))
+        trigger(target, key, type)
+    }
 
     return res
   }
