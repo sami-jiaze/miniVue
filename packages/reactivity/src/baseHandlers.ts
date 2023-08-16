@@ -3,6 +3,21 @@ import { ITERATE_KEY, track, trigger } from './effect'
 import { TriggerOpTypes } from './operations'
 import { myReactive } from './reactive'
 
+const arrayInstrumentations = {}
+;['includes', 'indexOf', 'lastIndexOf'].forEach((method) => {
+  const originMethod = Array.prototype[method]
+  arrayInstrumentations[method] = function (...args) {
+    // this 是代理对象，先在代理对象中查找，将结果存储到 res 中
+    let res = originMethod.apply(this, args)
+    
+    if (res === false || res === -1) {
+      // res 为 false 说明没找到，通过 this.raw 拿到原始数组，再去其中查找，并更新 res 值
+      res = originMethod.apply((this as any).raw, args)
+    }
+    return res
+  }
+})
+
 const get = createGetter()
 const shallowGet = createGetter(false, true)
 const readonlyGet = createGetter(true)
@@ -14,6 +29,12 @@ function createGetter(isReadonly = false, shallow = false) {
   return function get(target: object, key: string | symbol, receiver: object) {
     // 代理对象可以通过 raw 属性访问原始数据
     if (key === 'raw') return target
+
+    // 如果操作的目标对象是数组，并且 key 存在于arrayInstrumentations 上，
+    // 那么返回定义在 arrayInstrumentations 上的值
+    if (Array.isArray(target) && arrayInstrumentations.hasOwnProperty(key)) {
+      return Reflect.get(arrayInstrumentations, key, receiver)
+    }
     if (!isReadonly && typeof key !== 'symbol') {
       // 收集依赖
       track(target, key)
@@ -37,7 +58,6 @@ function createSetter() {
     value: unknown,
     receiver: any,
   ) {
-    
     const oldVal = target[key]
     // 如果属性不存在，则说明是在添加新属性，否则是设置已有属性
     // 如果代理目标是数组，则检测被设置的索引值是否小于数组长度，
