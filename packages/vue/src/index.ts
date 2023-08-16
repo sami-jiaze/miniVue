@@ -3,6 +3,7 @@ export { myReactive, myEffect, myRef, myComputed } from '@myvue/reactivity'
 export {
   queuePreFlushCb,
   myWatch,
+  watchEffect,
   h,
   Text,
   Fragment,
