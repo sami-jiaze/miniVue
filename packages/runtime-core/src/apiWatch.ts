@@ -42,12 +42,21 @@ function doWatch(
   }
 
   let oldValue, newValue
+  // cleanup 用来存储用户注册的过期回调
+  let cleanup
+  function onInvalidate(fn) {
+    cleanup = fn
+  }
 
   const job = () => {
     if (cb) {
       newValue = effect.run()
+      if (cleanup) {
+        // 在调用回调函数 cb 之前，先调用过期回调
+        cleanup()
+      }
       if (deep || hasChanged(newValue, oldValue)) {
-        cb(newValue, oldValue)
+        cb(newValue, oldValue, onInvalidate)
         oldValue = newValue
       }
     } else {
