@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+
+</head>
+
+<body>
+  <div id="app">
+  </div>
+  <script>
+    const { myRef, myEffect, myReactive } = myVue;
+    // 合理的触发响应性1
+    // let obj = myReactive({
+    //   foo: 1
+    // })
+
+    // myEffect(() => {
+    //   console.log(obj.foo);
+    // })
+    // obj.foo = 1; // 不应该触发响应式因为值没变
+
+    // 合理的触发响应性2
+    const obj = {}
+    const proto = { bar: 1 }
+    const child = myReactive(obj)
+    const parent = myReactive(proto)
+    // 使用 parent 作为 child 的原型
+    Object.setPrototypeOf(child, parent)
+
+    myEffect(() => {
+      console.log(child.bar) // 1
+    })
+    // 修改 child.bar 的值
+    child.bar = 2 // 不应该导致副作用函数重新执行两次
+  </script>
+</body>
+
+</html>

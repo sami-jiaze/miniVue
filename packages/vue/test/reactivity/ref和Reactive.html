@@ -13,8 +13,6 @@
 <body>
   <div id="app">
     <div id="p1"></div>
-    <div id="p2"></div>
-    <div id="p3"></div>
   </div>
   <script>
     const { myRef, myEffect, myReactive } = myVue;
@@ -28,38 +26,19 @@
       document.querySelector('#p1').innerText = obj.value.name + '1';
     })
     myEffect(() => {
-      document.querySelector('#p2').innerText = obj.value.name;
+      console.log(name.value);
     })
+    name.value = 'AMI'
+
+    console.log('---');
+
+    const obj1 = myReactive({ foo: { bar: 1 } })
     myEffect(() => {
-      document.querySelector('#p3').innerText = name.value;
+      console.log(obj1.foo.bar)
     })
+    // 修改 obj.foo.bar 的值，并不能触发响应
+    obj1.foo.bar = 2
 
-    setTimeout(() => {
-      obj.value.name = obj.value.name + '1'
-      name.value = 'Ami'
-      console.log(name);
-    }, 2000);
-
-    console.log("obj", obj);
-    console.log("name", name);
-
-    
-    // const obj = myReactive({
-    //   name: 'rio',
-    //   res: true
-    // })
-
-    // myEffect(() => {
-    //   document.querySelector('#p1').innerText = obj.res ? obj.name : 'not';
-    // })
-    // myEffect(() => {
-    //   document.querySelector('#p2').innerText = obj.name;
-    // })
-
-    // setTimeout(() => {
-    //   obj.res = false;
-    //   obj.name = 'Rio'
-    // }, 2000);
   </script>
 </body>
 
