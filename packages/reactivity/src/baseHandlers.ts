@@ -1,6 +1,7 @@
-import { hasOwn, isArray } from '@myvue/shared'
+import { hasOwn, isArray, isObject } from '@myvue/shared'
 import { ITERATE_KEY, track, trigger } from './effect'
 import { TriggerOpTypes } from './operations'
+import { myReactive } from './reactive'
 
 const get = createGetter()
 const shallowGet = createGetter(false, true)
@@ -18,7 +19,13 @@ function createGetter(isReadonly = false, shallow = false) {
       // 收集依赖
       track(target, key)
     }
-
+    // 如果是浅响应，则直接返回原始值
+    if (shallow) {
+      return res
+    }
+    if (isObject(res)) {
+      return myReactive(res)
+    }
     return res
   }
 }
