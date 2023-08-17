@@ -2,6 +2,7 @@ import { extend, isArray } from '@myvue/shared'
 import { ComputedRefImpl } from './computed'
 import { Dep } from './dep'
 import { TriggerOpTypes } from './operations'
+import { shouldTrack } from './baseHandlers'
 
 export type EffectScheduler = (...args: any[]) => any
 export interface ReactiveEffectOptions {
@@ -48,8 +49,6 @@ export function myEffect<T = any>(
   return runner
 }
 
-export let shouldTrack = true
-
 export class ReactiveEffect<T = any> {
   // 当前对象是否是有效的，为false则是已加stop的了
   active = true
@@ -86,7 +85,7 @@ export class ReactiveEffect<T = any> {
 // 收集依赖
 export function track(target: object, key: unknown) {
   // console.log('依赖收集', target, key)
-  if (!activeEffect) return
+  if (!activeEffect || !shouldTrack) return
   let depsMap = targetMap.get(target)
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()))
