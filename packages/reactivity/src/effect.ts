@@ -2,8 +2,8 @@ import { extend, isArray } from '@myvue/shared'
 import { ComputedRefImpl } from './computed'
 import { Dep } from './dep'
 import { TriggerOpTypes } from './operations'
+import { shouldTrack } from './baseHandlers'
 
-// 使用 ReactiveEffect 数组 让一个key可以绑定多个effect事件
 export type EffectScheduler = (...args: any[]) => any
 export interface ReactiveEffectOptions {
   lazy?: boolean
@@ -24,6 +24,8 @@ const targetMap = new WeakMap<any, keytoDepMap>()
 
 // 标记当前被执行的effect
 export let activeEffect: ReactiveEffect | undefined
+// 正在执行的effect栈
+const effectStack: ReactiveEffect[] = []
 // for in
 export const ITERATE_KEY = Symbol()
 
@@ -47,12 +49,10 @@ export function myEffect<T = any>(
   return runner
 }
 
-export let shouldTrack = true
-
 export class ReactiveEffect<T = any> {
   // 当前对象是否是有效的，为false则是已加stop的了
   active = true
-  // 分支处理 依赖数组 
+  // 分支处理 依赖数组
   deps: Dep[] = []
   computed?: ComputedRefImpl<T>
   constructor(
@@ -62,13 +62,22 @@ export class ReactiveEffect<T = any> {
   ) {}
 
   run() {
-     // 如果当前effect已经被stop 直接监听函数，不做收集逻辑
-    if (!this.active) return this.fn()
+    // 如果当前effect已经被stop 直接监听函数，不做收集逻辑
+    // if (!this.active) return this.fn()
+
     // 在每次副作用函数重新执行之前，清除上一次建立的响应联系
     // 解决分支切换导致的冗余副作用的问题
     cleanupEffect(this)
     activeEffect = this
-    return this.fn()
+    // 嵌套问题 在调用副作用函数之前将当前副作用函数压入栈中
+    effectStack.push(this)
+    const result = this.fn()
+    // 在当前副作用函数执行完毕后，将当前副作用函数弹出栈，
+    // 并把activeEffect 还原为之前的值
+    effectStack.pop()
+    activeEffect = effectStack[effectStack.length - 1]
+
+    return result
   }
   stop() {}
 }
@@ -76,7 +85,7 @@ export class ReactiveEffect<T = any> {
 // 收集依赖
 export function track(target: object, key: unknown) {
   // console.log('依赖收集', target, key)
-  if (!activeEffect) return
+  if (!activeEffect || !shouldTrack) return
   let depsMap = targetMap.get(target)
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()))
@@ -95,20 +104,49 @@ export function track(target: object, key: unknown) {
 }
 
 // 触发依赖
-export function trigger(target: object, key: unknown, type: TriggerOpTypes) {
+export function trigger(
+  target: object,
+  key: unknown,
+  type: TriggerOpTypes,
+  newVal,
+) {
   const depsMap = targetMap.get(target)
   if (!depsMap) return
   // 获取对应的 target - key - effect
   const effect: Dep | undefined = depsMap.get(key)
 
-  const effectsToRun = new Set()
-  if (!effect) return
+  const effectsToRun: Dep = new Set()
+  // if (!effect) return
   // 将与 key 相关联的副作用函数添加到 effectsToRun
   effect &&
     effect.forEach((fn) => {
       if (fn !== activeEffect) effectsToRun.add(fn)
     })
 
+  // 当操作类型为 ADD 并且目标对象是数组时，应该取出并执行那些与 length属性相关联的副作用函数
+  if (type === TriggerOpTypes.ADD && Array.isArray(target)) {
+    // 取出与 length 相关联的副作用函数
+    const lengthEffects = depsMap.get('length')
+
+    lengthEffects &&
+      lengthEffects.forEach((fn) => {
+        if (fn !== activeEffect) {
+          effectsToRun.add(fn)
+        }
+      })
+  }
+  // 如果操作目标是数组，并且修改了数组的 length 属性
+  if (Array.isArray(target) && key === 'length') {
+    // 对于索引大于或等于新的 length 值的元素，
+    // 需要把所有相关联的副作用函数取出并添加到 effectsToRun 中待执行
+    depsMap.forEach((effectfns, key) => {
+      if (key >= newVal) {
+        effectfns.forEach((effectFn) => {
+          if (effectFn !== activeEffect) effectsToRun.add(effectFn)
+        })
+      }
+    })
+  }
   // 只有当操作类型为 'ADD' 时，才触发与 ITERATE_KEY 相关联的副作用函数
   if (type === TriggerOpTypes.ADD || type === TriggerOpTypes.DELETE) {
     // 取得与 ITERATE_KEY 相关联的副作用函数
@@ -120,7 +158,7 @@ export function trigger(target: object, key: unknown, type: TriggerOpTypes) {
       })
   }
 
-  triggerEffects(effect)
+  triggerEffects(effectsToRun)
 }
 
 // 利用 dep 依次跟踪指定 key 的所有 effect
@@ -150,7 +188,9 @@ export function triggerEffects(dep: Dep) {
 // 触发指定依赖
 export function triggerEffect(effect: ReactiveEffect) {
   if (effect.scheduler) {
-    effect.scheduler()
+    effect.scheduler(effect.fn)
+
+    // effect.scheduler()
   } else {
     effect.run()
   }

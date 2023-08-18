@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+
+<body>
+
+  <script>
+    const { myRef, myEffect, myReactive } = myVue;
+
+    // const arr = myReactive(['foo'])
+    // myEffect(() => {
+    //   console.log(arr.length);
+    // })
+    // arr[2] = 'bar'
+
+    // console.log('----');
+
+    // const arr1 = myReactive(['Foo'])
+    // myEffect(() => {
+    //   for (let k in arr1) {
+    //     console.log(k);
+    //   }
+    // })
+    // arr1[1] = 'bar'
+    // arr1.length = 0
+
+    // console.log('---');
+
+    // const obj = {}
+    // const arr = myReactive([obj])
+    // console.log(arr.includes(obj)) // true
+
+    // console.log('---');
+    const arr = myReactive([])
+    // 第一个副作用函数
+    myEffect(() => {
+      arr.push(1)
+    })
+
+    // 第二个副作用函数
+    myEffect(() => {
+      arr.push(1)
+    })
+
+    arr[2] = 5
+    console.log(arr);
+  </script>
+</body>
+
+</html>

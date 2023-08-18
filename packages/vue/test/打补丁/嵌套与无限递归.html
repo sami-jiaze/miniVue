@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../../dist/vue.js"></script>
+
+</head>
+
+<body>
+  <script>
+    const { myReactive, myRef, myEffect } = myVue
+    let pro = myReactive({ foo: true, bar: true, num: 1 })
+    myEffect(function effectFn1() {
+      console.log('effectfn1 执行');
+      myEffect(function effectFn2() {
+        console.log("effectFn2 执行");
+        tep2 = pro.bar
+      })
+      tep1 = pro.foo
+    })
+
+    myEffect(() => {
+      pro.num++ // 会导致无限递归循环
+    })
+
+    setTimeout(() => {
+      pro.foo = false
+    }, 1000);
+  </script>
+</body>
+
+</html>

@@ -22,6 +22,7 @@ export const patchProp = (el: Element, key, prevValue, nextValue) => {
   }
 }
 
+// 属性是否应该作为 DOM Properties 被设置
 function shouldSetAsProp(el: Element, key: string) {
   if (key === 'form') {
     return false
