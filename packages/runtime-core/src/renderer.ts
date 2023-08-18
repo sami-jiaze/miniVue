@@ -211,43 +211,52 @@ function baseCreateRenderer(options: RendererOptions) {
       }
     }
   }
+  
+  // 更新子节点
   const patchChildren = (oldVnode, newVnode, container, anchor) => {
     const c1 = oldVnode && oldVnode.children
     const prevShapeFlag = oldVnode ? oldVnode.shapeFlag : 0
     const c2 = newVnode && newVnode.children
     const { shapeFlag } = newVnode
 
-    // 新子节点为 TEXT_CHILDREN
+    // 新子节点为文本节点时
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      // 旧子节点为 ARRAY_CHILDREN
+      // 当旧子节点为一组子节点时，需要逐个卸载
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-        // TODO: 卸载旧子节点
+        c1.forEach((element) => {
+          unmount(element)
+        })
       }
-      // 新旧子节点不同
+      // 如果新旧子节点不同
       if (c2 !== c1) {
         // 挂载新子节点的文本
         hostSetElementText(container, c2 as string)
       }
-    } else {
+    }
+    // 新子节点是一组子节点时
+    else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-        if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-          // 要进行 diff 运算
-          patchKeyedChildren(c1, c2, container, anchor)
-        }
-        // 新子节点不为 ARRAY_CHILDREN，则直接卸载旧子节点
-        else {
-          // TODO: 卸载
-        }
+        // 新旧子节点都是一组子节点 要进行 diff 运算
+        patchKeyedChildren(c1, c2, container, anchor)
       } else {
-        if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
-          // 删除旧的文本
-          hostSetElementText(container, '')
-        }
-        // 新子节点为 ARRAY_CHILDREN
-        if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-          // TODO: 单独挂载新子节点操作
-        }
+        // 此时旧子节点要么是文本子节点，要么不存在
+        // 将容器清空，然后将新的一组子节点逐个挂载
+        hostSetElementText(container, '')
+        c2.forEach((c) => {
+          patch(null, c, container)
+        })
       }
+    }
+    // 新子节点不存在
+    else {
+      // 旧子节点是一组子节点，只需逐个卸载即可
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        c1.forEach((c) => unmount(c))
+      } else if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // 旧子节点是文本子节点，清空内容即可
+        hostSetElementText(container, '')
+      }
+      // 如果也没有旧子节点，那么什么都不需要做
     }
   }
 
