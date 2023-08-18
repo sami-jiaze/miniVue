@@ -11,6 +11,7 @@ export const nodeOps = {
     el.textContent = text
   },
   remove(child: Element) {
+    // 获取 child 的父元素
     const parent = child.parentNode
     if(parent) {
       parent.removeChild(child)

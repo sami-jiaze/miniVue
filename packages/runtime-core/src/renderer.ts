@@ -90,12 +90,14 @@ function baseCreateRenderer(options: RendererOptions) {
   // 挂载element
   const mountElement = (vnode, container, anchor) => {
     const { type, props, shapeFlag } = vnode
-    // 创建element
+
+    // 创建element 让 vnode.el 引用真实 DOM 元素
     const el = (vnode.el = hostCreateElement(type))
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
       // 设置文本
       hostSetElementText(el, vnode.children)
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      // 如果 children 是数组，则遍历每一个子节点，并调用 patch 函数挂载它们
       mountChildren(vnode.children, el, anchor)
     }
     // 设置props
@@ -107,16 +109,18 @@ function baseCreateRenderer(options: RendererOptions) {
     // 插入节点
     hostInsert(el, container, anchor)
   }
-  // 针对Fragment情况
+
   const mountChildren = (children, container, anchor) => {
     if (isString(children)) {
       children = children.split('')
     }
     for (let i = 0; i < children.length; i++) {
       const child = (children[i] = normalizeVNode(children[i]))
+      // 子节点挂载阶段，没有旧 vnode，所以只需要传递 null 即可
       patch(null, child, container, anchor)
     }
   }
+
   const mountComponent = (initialVNode, container, anchor) => {
     initialVNode.component = createComponentInstance(initialVNode)
     const instance = initialVNode.component
@@ -166,6 +170,7 @@ function baseCreateRenderer(options: RendererOptions) {
 
     update()
   }
+
   // 更新element
   const patchElement = (oldVNode, newVNode) => {
     const el = (newVNode.el = oldVNode.el)
@@ -180,9 +185,32 @@ function baseCreateRenderer(options: RendererOptions) {
   // 卸载element
   const unmount = (vnode) => {
     // console.log("will remove", vnode);
+    // 根据 vnode 获取要卸载的真实 DOM 元素 el 绑定的真实的dom元素
     hostRemove(vnode.el!)
   }
 
+  const patchProps = (el: Element, vnode, oldProps, newProps) => {
+    // 新旧 props 不相同时才进行处理
+    if (oldProps !== newProps) {
+      // 遍历新的 props，触发 hostPatchProp ，赋值新属性
+      for (const key in newProps) {
+        const next = newProps[key]
+        const prev = oldProps[key]
+        if (next !== prev) {
+          hostPatchProp(el, key, prev, next)
+        }
+      }
+      // 存在旧的 props 时
+      if (oldProps !== EMPTY_OBJ) {
+        // 遍历旧的 props，依次触发 hostPatchProp ，删除不存在于新props 中的旧属性
+        for (const key in oldProps) {
+          if (!(key in newProps)) {
+            hostPatchProp(el, key, oldProps[key], null)
+          }
+        }
+      }
+    }
+  }
   const patchChildren = (oldVnode, newVnode, container, anchor) => {
     const c1 = oldVnode && oldVnode.children
     const prevShapeFlag = oldVnode ? oldVnode.shapeFlag : 0
@@ -409,29 +437,6 @@ function baseCreateRenderer(options: RendererOptions) {
     }
   }
 
-  const patchProps = (el: Element, vnode, oldProps, newProps) => {
-    // 新旧 props 不相同时才进行处理
-    if (oldProps !== newProps) {
-      // 遍历新的 props，触发 hostPatchProp ，赋值新属性
-      for (const key in newProps) {
-        const next = newProps[key]
-        const prev = oldProps[key]
-        if (next !== prev) {
-          hostPatchProp(el, key, prev, next)
-        }
-      }
-      // 存在旧的 props 时
-      if (oldProps !== EMPTY_OBJ) {
-        // 遍历旧的 props，依次触发 hostPatchProp ，删除不存在于新props 中的旧属性
-        for (const key in oldProps) {
-          if (!(key in newProps)) {
-            hostPatchProp(el, key, oldProps[key], null)
-          }
-        }
-      }
-    }
-  }
-
   // render函数挂载或者更新操作
   const patch = (oldVNode, newVNode, container, anchor = null) => {
     if (oldVNode === newVNode) {
@@ -466,6 +471,7 @@ function baseCreateRenderer(options: RendererOptions) {
     if (vnode === null) {
       // 卸载
       if (container._vnode) {
+        // 旧 vnode 存在，且新 vnode 不存在，说明是卸载操作
         unmount(container._vnode)
       }
     } else {
@@ -473,12 +479,13 @@ function baseCreateRenderer(options: RendererOptions) {
       patch(container._vnode || null, vnode, container)
     }
 
+    // 把 vnode 存储到 container._vnode 下，即后续渲染中的旧 vnode
     container._vnode = vnode
     // console.log("render", vnode);
   }
 
-  return { 
+  return {
     render,
-    createApp: createAppAPI(render)
-   }
+    createApp: createAppAPI(render),
+  }
 }
