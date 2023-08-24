@@ -1,6 +1,6 @@
 import { ShapeFlags } from 'packages/shared/src/shapeFlags'
 import { Fragment, Text, Comment, isSameVNodeType } from './vnode'
-import { EMPTY_OBJ, isString } from '@myvue/shared'
+import { EMPTY_OBJ, hasChanged, hasPropsChanged, isString } from '@myvue/shared'
 import { normalizeVNode, renderComponentRoot } from './componentRenderUtils'
 import { createComponentInstance, setupComponent } from './component'
 import { ReactiveEffect } from 'packages/reactivity/src/effect'
@@ -84,6 +84,8 @@ function baseCreateRenderer(options: RendererOptions) {
   const processComponent = (oldVNode, newVNode, container, anchor) => {
     if (oldVNode === null) {
       mountComponent(newVNode, container, anchor)
+    } else {
+      patchComponent(oldVNode, newVNode, anchor)
     }
   }
 
@@ -129,7 +131,6 @@ function baseCreateRenderer(options: RendererOptions) {
     // 设置组件渲染
     setupRenderEffect(instance, initialVNode, container, anchor)
   }
-
   // 设置组件渲染
   const setupRenderEffect = (instance, initialVNode, container, anchor) => {
     const componentUpdateFn = () => {
@@ -182,6 +183,14 @@ function baseCreateRenderer(options: RendererOptions) {
     patchProps(el, newVNode, oldProps, newProps)
   }
 
+  const patchComponent = (n1, n2, anchor) => {
+    // 获取组件实例，即 n1.component，同时让新的组件虚拟节点 n2.component也指向组件实例
+    const instance = (n2.component = n1.component)
+    // 调用 hasPropsChanged 检测为子组件传递的 props 是否发生变化，如果没有变化，则不需要更新
+    if (hasPropsChanged(n1.props, n2.props)) {
+    }
+  }
+
   // 卸载element
   const unmount = (vnode) => {
     // console.log("will remove", vnode);
@@ -211,7 +220,7 @@ function baseCreateRenderer(options: RendererOptions) {
       }
     }
   }
-  
+
   // 更新子节点
   const patchChildren = (oldVnode, newVnode, container, anchor) => {
     const c1 = oldVnode && oldVnode.children

@@ -123,7 +123,7 @@ function parseTag(context: ParseContext, type: TagType) {
   let isSelfClosing = context.source.startsWith('/>')
   advanceBy(context, isSelfClosing ? 2 : 1)
   // 标签类型
-	let tagType = ElementTypes.ELEMENT
+  let tagType = ElementTypes.ELEMENT
   return {
     type: NodeTypes.ELEMENT,
     tag,
@@ -224,26 +224,26 @@ function parseAttribute(context: ParseContext, nameSet: Set<string>) {
 
 // 获取属性对应的value
 function parseAttributeValue(context: ParseContext) {
-	let content = ''
+  let content = ''
 
-	// 判断是单引号还是双引号
-	const quote = context.source[0]
-	const isQuoted = quote === `"` || quote === `'`
-	// 引号处理
-	if (isQuoted) {
-		advanceBy(context, 1)
-		// 获取结束的 index
-		const endIndex = context.source.indexOf(quote)
-		// 获取指令的值。例如：v-if="isShow"，则值为 isShow
-		if (endIndex === -1) {
-			content = parseTextData(context, context.source.length)
-		} else {
-			content = parseTextData(context, endIndex)
-			advanceBy(context, 1)
-		}
-	}
+  // 判断是单引号还是双引号
+  const quote = context.source[0]
+  const isQuoted = quote === `"` || quote === `'`
+  // 引号处理
+  if (isQuoted) {
+    advanceBy(context, 1)
+    // 获取结束的 index
+    const endIndex = context.source.indexOf(quote)
+    // 获取指令的值。例如：v-if="isShow"，则值为 isShow
+    if (endIndex === -1) {
+      content = parseTextData(context, context.source.length)
+    } else {
+      content = parseTextData(context, endIndex)
+      advanceBy(context, 1)
+    }
+  }
 
-	return { content, isQuoted, loc: {} }
+  return { content, isQuoted, loc: {} }
 }
 
 function parseText(context: ParseContext) {
