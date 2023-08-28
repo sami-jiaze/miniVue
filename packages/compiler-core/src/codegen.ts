@@ -6,7 +6,7 @@ import { getVNodeHelper } from './utils'
 export function generate(ast) {
   // 生成上下文 context
   const context = createCodegenContext(ast)
-  console.log("10", context);
+  // console.log("10", context);
   
   // 获取 code 拼接方法
   const { push, newline, indent, deindent } = context

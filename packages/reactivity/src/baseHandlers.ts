@@ -1,7 +1,7 @@
 import { hasOwn, isArray, isObject } from '@myvue/shared'
 import { ITERATE_KEY, track, trigger } from './effect'
 import { TriggerOpTypes } from './operations'
-import { myReactive } from './reactive'
+import { ReactiveFlags, myReactive, toRaw } from './reactive'
 
 // 限制数组push方法即读取length也设置length造成无限递归
 export let shouldTrack = true
@@ -17,7 +17,6 @@ export const arrayInstrumentations = {}
     return res
   }
 })
-
 ;['includes', 'indexOf', 'lastIndexOf'].forEach((method) => {
   const originMethod = Array.prototype[method]
   arrayInstrumentations[method] = function (...args) {
@@ -41,7 +40,10 @@ const set = createSetter()
 function createGetter(isReadonly = false, shallow = false) {
   return function get(target: object, key: string | symbol, receiver: object) {
     // 代理对象可以通过 raw 属性访问原始数据
-    if (key === 'raw') return target
+    if (key === ReactiveFlags.RAW) {
+      // console.log(raw);
+      return target
+    }
 
     // 如果操作的目标对象是数组，并且 key 存在于arrayInstrumentations 上，
     // 那么返回定义在 arrayInstrumentations 上的值
@@ -85,7 +87,10 @@ function createSetter() {
 
     const res = Reflect.set(target, key, value, receiver)
     // target === receiver.raw 说明 receiver 就是 target 的代理对象
-    if (target === receiver.raw) {
+    // console.log('torow', receiver, toRaw(receiver))
+    // 判断 receiver 是不是target 的代理对象
+    // 屏蔽由原型引起的更新
+    if (target === toRaw(receiver)) {
       // 比较新值与旧值，当不全等的时候且不是 NaN,才触发依赖
       if (oldVal !== value && (oldVal === oldVal || value === value))
         trigger(target, key, type, value)

@@ -40,3 +40,19 @@ export const hasOwn = (
   val: object,
   key: string | symbol,
 ): key is keyof typeof val => hasOwnProperty.call(val, key)
+
+// 检测组件传递的 props 是否发生变化
+export function hasPropsChanged(prevProps, nextProps) {
+  const nextKeys = Object.keys(nextProps)
+  // 如果新旧 props 的数量变了，则说明有变化
+  if (nextKeys.length !== Object.keys(prevProps).length) {
+    return true
+  }
+  // 只有
+  for (let i = 0; i < nextKeys.length; i++) {
+    const key = nextKeys[i]
+    // 有不相等的 props，则说明有变化
+    if (nextProps[key] !== prevProps[key]) return true
+  }
+  return false
+}
