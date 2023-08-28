@@ -26,18 +26,28 @@
     // obj.foo = 1; // 不应该触发响应式因为值没变
 
     // 合理的触发响应性2
-    const obj = {}
-    const proto = { bar: 1 }
-    const child = myReactive(obj)
-    const parent = myReactive(proto)
-    // 使用 parent 作为 child 的原型
-    Object.setPrototypeOf(child, parent)
+    // const obj = {}
+    // const proto = { bar: 1 }
+    // const child = myReactive(obj)
+    // const parent = myReactive(proto)
+    // // 使用 parent 作为 child 的原型
+    // Object.setPrototypeOf(child, parent)
 
-    myEffect(() => {
-      console.log(child.bar) // 1
-    })
-    // 修改 child.bar 的值
-    child.bar = 2 // 不应该导致副作用函数重新执行两次
+    // myEffect(() => {
+    //   console.log(child.bar) // 1
+    // })
+    // // 修改 child.bar 的值
+    // child.bar = 2 // 不应该导致副作用函数重新执行两次
+
+    // 合理的触发响应性3
+    // let obj = myReactive({
+    //   name: 'foo',
+    //   raw: 100
+    // })
+    // myEffect(()=>{
+    //   console.log(obj.name);
+    // })
+    // obj.name = 200
   </script>
 </body>
 

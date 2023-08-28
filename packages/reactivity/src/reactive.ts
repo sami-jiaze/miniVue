@@ -12,6 +12,11 @@ export const enum ReactiveFlags {
   RAW = '__v_raw',
 }
 
+export function toRaw<T>(observed: T): T {
+  const raw = observed && observed[ReactiveFlags.RAW]
+  return raw ? toRaw(raw) : observed
+}
+
 export function isReactive(value: boolean) {
   return !!(value && value[ReactiveFlags.IS_REACTIVE])
 }
@@ -21,9 +26,7 @@ export const toReactive = <T extends unknown>(value: T): T => {
 // 代理缓存的map
 export const reactiveMap = new WeakMap<object, any>()
 
-export function shallowReactive(target: object) {
-
-}
+export function shallowReactive(target: object) {}
 
 // reactive 主函数 target为被代理对象
 export function myReactive(target: object) {
